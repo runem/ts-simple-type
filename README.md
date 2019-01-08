@@ -160,8 +160,8 @@ Returns true if `type` is assignable to a primitive type like `string`, `number`
 > isAssignableToSimpleTypeKind(type: Type | SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], checker?: TypeChecker, options?: Options): boolean
 
 Returns true if `type` is assignable to a `SimpleTypeKind`.
-`options.matchAny` (boolean): Can be used to allow the "any" type to match everything.
-`options.or` ("and" | "or"): Can be used control how an array will match if kind is an array of SimpleTypeKind.
+- `options.matchAny` (boolean): Can be used to allow the "any" type to match everything.
+- `options.or` ("and" | "or"): Can be used control how an array will match if kind is an array of SimpleTypeKind.
 
 ### isAssignableToValue
 > isAssignableToValue(type: SimpleType | Type, value: any, checker?: TypeChecker): boolean
@@ -177,7 +177,7 @@ Returns a string representation of the simple type. The string representation ma
 > toSimpleType(type: Type, options: Options): SimpleType
 
 Returns a `SimpleType` that represents a native Typescript `Type`.
-`options.checker` (TypeChecker): A `TypeChecker` is required in order to convert the type.
+- `options.checker` (TypeChecker): A `TypeChecker` is required in order to convert the type.
 
 ## Roadmap
 

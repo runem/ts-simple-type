@@ -2,14 +2,18 @@
 	"name": "ts-simple-type",
 	"version": "0.2.14",
 	"description": "Relationship type checker functions for Typescript types.",
+	"author": "runem",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/runem/ts-simple-type.git"
+	},
 	"keywords": [
 		"typescript",
 		"ast",
 		"typechecker",
 		"type"
 	],
-	"author": "runem",
-	"license": "MIT",
 	"scripts": {
 		"prepublish": "npm run build",
 		"release:patch": "npm run prepublish && standard-version --release-as patch",
