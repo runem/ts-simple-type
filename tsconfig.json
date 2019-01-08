@@ -1,0 +1,22 @@
+{
+	"include": ["src", "test"],
+	"compilerOptions": {
+		"plugins": [
+			{
+				"name": "tslint-language-service",
+				"ignoreDefinitionFiles": true,
+				"alwaysShowRuleFailuresAsWarnings": false
+			}
+		],
+		"target": "esnext",
+		"module": "commonjs",
+		"lib": ["esnext"],
+		"outDir": "./dist",
+		"downlevelIteration": true,
+		"strict": true,
+		"esModuleInterop": true,
+		"noImplicitAny": true,
+		"allowUnusedLabels": false,
+		"pretty": true
+	}
+}

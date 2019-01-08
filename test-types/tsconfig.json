@@ -1,0 +1,16 @@
+{
+	"files": [
+		"test-types.ts",
+		"test-types-2.ts",
+		"test-types-3.ts"
+	],
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "commonjs",
+		"lib": ["esnext", "dom"],
+		"outDir": "./dist",
+		"downlevelIteration": true,
+		"strict": true,
+		"esModuleInterop": true
+	}
+}
