@@ -29,17 +29,17 @@ export function isAssignableToType(typeA: Type | Node | SimpleType, typeB: Type 
 	}
 
 
-	if (typeA === typeB) return true;
+	//if (typeA === typeB) return true;
 
 	const simpleTypeA = isSimpleType(typeA) ? typeA : simpleTypeCache.has(typeA) ? simpleTypeCache.get(typeA)! : toSimpleType(typeA, checker!, simpleTypeCache);
 	const simpleTypeB = isSimpleType(typeB) ? typeB : simpleTypeCache.has(typeB) ? simpleTypeCache.get(typeB)! : toSimpleType(typeB, checker!, simpleTypeCache);
 
 	if (!isSimpleType(typeA)) {
-		simpleTypeCache.set(typeA, simpleTypeA);
+		//simpleTypeCache.set(typeA, simpleTypeA);
 	}
 
 	if (!isSimpleType(typeB)) {
-		simpleTypeCache.set(typeB, simpleTypeB);
+		//simpleTypeCache.set(typeB, simpleTypeB);
 	}
 
 	const typeAResultCache = (() => {
@@ -63,7 +63,7 @@ export function isAssignableToType(typeA: Type | Node | SimpleType, typeB: Type 
 
 	const result = isAssignableToSimpleType(simpleTypeA, simpleTypeB);
 
-	typeAResultCache.set(simpleTypeB, result);
+	//typeAResultCache.set(simpleTypeB, result);
 
 	return result;
 }

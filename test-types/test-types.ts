@@ -1,5 +1,5 @@
 import { myTestObj } from "./test-types-3";
-import { MyTestInterface } from "./test-types-2";
+import { MyTestInterface, MyType } from "./test-types-2";
 import * as ts from "typescript";
 import {PathLike} from "fs";
 
@@ -20,6 +20,9 @@ interface MyCircularInterface3 {
 
 type MyCircularType = MyCircularInterface3 | string;
 
+{ const _: MyType = {} as MyType; }
+{ const _: MyType = {} as MyType; }
+{ const _: MyType = {} as MyType; }
 { const _: MyCircularInterface1 = {} as MyCircularInterface1; }
 { const _: ts.Node = {} as MyCircularInterface1; }
 { const _: ChildNode = {}; }
