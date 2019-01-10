@@ -33,53 +33,67 @@ import {
 	isBigIntLiteral,
 	isVoid,
 	getModifiersFromDeclaration,
-	isMethod
+	isMethod,
+	isNode
 } from "./ts-util";
 import { tsModule } from "./ts-module";
-
-export type SimpleTypeCache = WeakMap<Symbol, SimpleType | null>;
-
-export interface ToSimpleTypeOptions {
-	cache?: SimpleTypeCache;
-	checker: TypeChecker;
-}
 
 /**
  * Converts a Typescript type to a "SimpleType"
  * @param type The type to convert.
  * @param options Converts using these options.
  */
-export function toSimpleType(type: Node, options: ToSimpleTypeOptions): SimpleType;
-export function toSimpleType(type: Type, options: ToSimpleTypeOptions): SimpleType;
-export function toSimpleType(type: Type | Node, options: ToSimpleTypeOptions): SimpleType {
-	if (!("isUnion" in type)) {
-		return toSimpleType(options.checker.getTypeAtLocation(type), options);
+export function toSimpleType(type: Node, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType;
+export function toSimpleType(type: Type, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType;
+export function toSimpleType(type: Type | Node, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType {
+	if (isNode(type)) {
+		// "type" is a "Node", convert it to a "Type" and continue.
+		return toSimpleType(checker.getTypeAtLocation(type), checker);
 	}
 
-	const cache = options.cache || new WeakMap<Symbol, SimpleType>();
+	return toSimpleTypeInternalCaching(type, {
+		checker,
+		cache: cache || new WeakMap<Type, SimpleType>()
+	})
+}
 
-	/*const symbol = type.aliasSymbol;
-	if (symbol != null && cache.has(symbol)) {
-		return {
-			kind: SimpleTypeKind.CIRCULAR_TYPE_REF,
-			ref: cache.get(symbol)!
+export interface ToSimpleTypeOptions {
+	cache: WeakMap<Type, SimpleType>;
+	checker: TypeChecker;
+}
+
+function toSimpleTypeInternalCaching(type: Type, options: ToSimpleTypeOptions): SimpleType {
+
+	// Mutate the simple type cache so that the type tree from now on is seperate
+	// However, keep the same "idMap"
+	const placeholder: SimpleType = {} as any;
+
+	if (options.cache.has(type)) {
+		// Only return a circular ref if it's a class of interface.
+		// Don't return circular ref if it's a primitive like a "number"
+		if (type.isClassOrInterface()) {
+			return {
+				kind: SimpleTypeKind.CIRCULAR_TYPE_REF,
+				ref: options.cache.get(type)!
+			}
 		}
-	};*/
 
-	return toSimpleTypeInternal(type, { cache, checker: options.checker });
+	} else {
+		// Connect the type to the placeholder reference
+		// Circular types will point to this reference
+		options.cache.set(type, placeholder);
+	}
 
-	/*const placeholder: any = {};
-	if (symbol != null) cache.set(symbol, placeholder);
-	const simpleType = toSimpleTypeInternal(type, { cache, checker: options.checker });
+	// Construct the simple type recursively
+	const simpleType = toSimpleTypeInternal(type, options);
+
+	// Transfer properties on the simpleType to the placeholder
+	// This makes it possible to keep on using the reference "placeholder".
 	Object.assign(placeholder, simpleType);
 
-
-	//console.log(placeholder);
-	//console.log("finishing ", options.checker.typeToString(type), simpleType.kind)
-	console.dir(simpleType, {depth: 4});
-
-	return placeholder;*/
+	return placeholder;
 }
+
 
 function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleType {
 	const { checker } = options;
@@ -134,7 +148,7 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 		return {
 			name: name || "",
 			kind: SimpleTypeKind.ENUM,
-			types: type.types.map(t => toSimpleType(t, options) as SimpleTypeEnumMember)
+			types: type.types.map(t => toSimpleTypeInternalCaching(t, options) as SimpleTypeEnumMember)
 		};
 	}
 
@@ -142,13 +156,13 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 	else if (type.isUnion()) {
 		return {
 			kind: SimpleTypeKind.UNION,
-			types: simplifySimpleTypeArray(type.types.map(t => toSimpleType(t, options))),
+			types: simplifySimpleTypeArray(type.types.map(t => toSimpleTypeInternalCaching(t, options))),
 			name
 		};
 	} else if (type.isIntersection()) {
 		return {
 			kind: SimpleTypeKind.INTERSECTION,
-			types: simplifySimpleTypeArray(type.types.map(t => toSimpleType(t, options))),
+			types: simplifySimpleTypeArray(type.types.map(t => toSimpleTypeInternalCaching(t, options))),
 			name
 		};
 	}
@@ -159,7 +173,7 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 		if (types.length === 1) {
 			return {
 				kind: SimpleTypeKind.ARRAY,
-				type: toSimpleType(types[0], options),
+				type: toSimpleTypeInternalCaching(types[0], options),
 				name
 			};
 		}
@@ -172,7 +186,7 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 				const childSymbol = childType.getSymbol();
 				return {
 					optional: childSymbol != null ? (childSymbol.flags & tsModule.ts.SymbolFlags.Optional) !== 0 : false,
-					type: toSimpleType(childType, options)
+					type: toSimpleTypeInternalCaching(childType, options)
 				};
 			}),
 			name
@@ -210,7 +224,7 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 					({
 						name: symbol.name,
 						modifiers: getModifiersFromDeclaration(symbol.valueDeclaration),
-						type: toSimpleType(checker.getTypeAtLocation(symbol.valueDeclaration), options)
+						type: toSimpleTypeInternalCaching(checker.getTypeAtLocation(symbol.valueDeclaration), options)
 					} as SimpleTypeClassMember)
 			);
 
@@ -229,7 +243,7 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 		const members = checker.getPropertiesOfType(type).map(symbol => ({
 			name: symbol.name,
 			optional: (symbol.flags & tsModule.ts.SymbolFlags.Optional) !== 0,
-			type: toSimpleType(checker.getTypeAtLocation(symbol.valueDeclaration), options)
+			type: toSimpleTypeInternalCaching(checker.getTypeAtLocation(symbol.valueDeclaration), options)
 		}));
 
 		if (type.isClassOrInterface()) {
@@ -326,7 +340,7 @@ function getSimpleFunctionFromDeclaration(functionDeclaration: Declaration, opti
 
 		if (signature != null) {
 			// Temporary solution untill circular types are supported
-			const returnType = checkReturnType ? toSimpleType(checker.getReturnTypeOfSignature(signature), options) : undefined;
+			const returnType = checkReturnType ? toSimpleTypeInternalCaching(checker.getReturnTypeOfSignature(signature), options) : undefined;
 
 			const argTypes = functionDeclaration.parameters.map(parameterDecl => {
 				const argType = checker.getTypeAtLocation(parameterDecl);
@@ -334,7 +348,7 @@ function getSimpleFunctionFromDeclaration(functionDeclaration: Declaration, opti
 				return {
 					name: parameterDecl.name.getText(),
 					optional: parameterDecl.questionToken != null,
-					type: toSimpleType(argType, options),
+					type: toSimpleTypeInternalCaching(argType, options),
 					spread: parameterDecl.dotDotDotToken != null,
 					initializer: parameterDecl.initializer != null
 				} as SimpleTypeFunctionArgument;

@@ -34,5 +34,5 @@ export function isAssignableToValue(type: SimpleType | Type, value: any, checker
 		throw new Error(`Comparing type "${type.kind}" to value ${value}, type ${typeof value} not supported yet.`);
 	}
 
-	return isAssignableToValue(toSimpleType(type, { checker: checker! }), value);
+	return isAssignableToValue(toSimpleType(type, checker!), value);
 }

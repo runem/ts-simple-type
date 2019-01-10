@@ -1,5 +1,34 @@
 import { myTestObj } from "./test-types-3";
 import { MyTestInterface } from "./test-types-2";
+import * as ts from "typescript";
+import {PathLike} from "fs";
+
+// Circular references
+interface MyCircularInterface1 {
+	foo: string;
+	bar: MyCircularInterface2;
+}
+
+interface MyCircularInterface2 {
+	foo: number;
+	bar: MyCircularInterface1;
+}
+
+interface MyCircularInterface3 {
+	next: MyCircularType;
+}
+
+type MyCircularType = MyCircularInterface3 | string;
+
+{ const _: MyCircularInterface1 = {} as MyCircularInterface1; }
+{ const _: ts.Node = {} as MyCircularInterface1; }
+{ const _: ChildNode = {}; }
+{ const _: HTMLElement = {}; }
+{ const _: MyCircularType = {} as MyCircularInterface3; }
+{ const _: MyCircularType = {} as MyCircularType; }
+{ const _: Event = {}; }
+{ const _: EventTarget = {}; }
+{ const _: PathLike = {}; }
 
 //{ const _: Promise<number> = Promise.resolve(123) }
 // Functions
@@ -185,6 +214,7 @@ type MyEnumAlias = MyEnum;
 { const _: string | number = 123 as (number | null); }
 { const _: string | number = 123 as (null | number); }
 { const _: string | number = MyEnum.GREEN; }
+{ const _: string = "hej" as (boolean | string); }
 { const _: string = 123 as (string | number); }
 { const _: "red" | "green" = "blue" as string; }
 

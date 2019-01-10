@@ -53,9 +53,7 @@ export interface SimpleTypeMemberNamed extends SimpleTypeMember {
 	name: string;
 }
 
-export interface SimpleTypeClassMember {
-	name: string;
-	type: SimpleType;
+export interface SimpleTypeClassMember extends SimpleTypeMemberNamed {
 	modifiers: SimpleTypeModifierKind[];
 }
 

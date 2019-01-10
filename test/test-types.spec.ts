@@ -25,7 +25,6 @@ interface VisitContext {
 function visit(node: ts.Node, ctx: VisitContext) {
 	const { checker } = ctx;
 
-	//console.dir(node, {depth: 2});
 	if (ts.isVariableDeclaration(node) && node.initializer != null) {
 		const line = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line;
 		const typeA = checker.getTypeAtLocation(node);
@@ -49,7 +48,7 @@ const checker = program.getTypeChecker();
 
 const shouldBeAssignable = (line: number) => {
 	for (const diagnostic of diagnostics) {
-		if (diagnostic.file && [2322, 2741, 2739].includes(diagnostic.code)) {
+		if (diagnostic.file && [2322, 2741, 2740, 2739].includes(diagnostic.code)) {
 			const { line: diagnosticLine } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
 			if (line === diagnosticLine) {
 				return false;
@@ -64,17 +63,20 @@ visit(sourceFile, {
 	checker: program.getTypeChecker(),
 	foundTest: (line: number, typeA: Type, typeB: Type, node: VariableDeclaration) => {
 		if (RELEVANT_LINES != null && !RELEVANT_LINES.includes(line + 1)) return;
-		executeToStringTest(line, typeA, typeB, { node, checker });
-		executeTypeCheckerTest(line, typeA, typeB, { node, checker, shouldBeAssignable: shouldBeAssignable(line) });
+		try {
+			executeToStringTest(line, typeA, typeB, { node, checker });
+			executeTypeCheckerTest(line, typeA, typeB, { node, checker, shouldBeAssignable: shouldBeAssignable(line) });
+		} catch (e) {
+			console.log(e);
+		}
 	}
 });
 
 function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }: { checker: TypeChecker; node: VariableDeclaration }) {
-	const typeBStr = checker.typeToString(typeB);
 	const typeAStr = checker.typeToString(typeA);
 
 	test(`${line + 1}: simpleTypeToString('${typeAStr}')`, t => {
-		const simpleTypeA = toSimpleType(typeA, { checker });
+		const simpleTypeA = toSimpleType(typeA, checker);
 		const simpleTypeAStr = simpleTypeToString(simpleTypeA);
 
 		if (simpleTypeAStr !== typeAStr) {
@@ -84,13 +86,15 @@ function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }
 		t.pass();
 	});
 
+	const typeBStr = checker.typeToString(typeB);
 	if (typeAStr === typeBStr) return;
 
 	test(`${line + 1}: simpleTypeToString('${typeBStr}')`, t => {
-		const simpleTypeB = toSimpleType(typeB, { checker });
+		const simpleTypeB = toSimpleType(typeB, checker);
 		const simpleTypeBStr = simpleTypeToString(simpleTypeB);
 
 		if (simpleTypeBStr !== typeBStr) {
+			console.dir(simpleTypeB, { depth: 10 });
 			return t.fail(`toString should give ${typeBStr}. Not ${simpleTypeBStr}`);
 		}
 
@@ -107,11 +111,11 @@ function executeTypeCheckerTest(line: number, typeA: Type, typeB: Type, { checke
 			const isAssignable = isAssignableToType(typeA, typeB, checker);
 
 			if (shouldBeAssignable !== isAssignable) {
-				const simpleTypeA = toSimpleType(typeA, { checker });
-				const simpleTypeB = toSimpleType(typeB, { checker });
+				const simpleTypeA = toSimpleType(typeA, checker);
+				const simpleTypeB = toSimpleType(typeB, checker);
 				return t.fail(
 					`${isAssignable ? "Can" : "Can't"} assign '${typeBStr}' (${simpleTypeB.kind}) to '${typeAStr}' (${simpleTypeA.kind}) but ${
-						shouldBeAssignable ? "it should be allowed!" : "it shouldn't be allowed!"
+					shouldBeAssignable ? "it should be allowed!" : "it shouldn't be allowed!"
 					}`
 				);
 			}

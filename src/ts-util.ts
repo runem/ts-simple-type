@@ -1,7 +1,11 @@
-import { TypeReference, Type, ObjectType, TypeFlags, TupleType, GenericType, LiteralType, BigIntLiteralType, UniqueESSymbolType, Declaration, Symbol } from "typescript";
+import { TypeReference, Type, ObjectType, Node, TypeFlags, TupleType, GenericType, LiteralType, BigIntLiteralType, UniqueESSymbolType, Declaration, Symbol } from "typescript";
 import { and, or } from "./util";
 import { tsModule } from "./ts-module";
 import { SimpleTypeModifierKind } from "./simple-type";
+
+export function isNode (obj: any): obj is Node {
+	return !("isUnion" in obj);
+}
 
 function hasFlag(type: Type, flag: TypeFlags | TypeFlags[], op: "and" | "or" = "and"): boolean {
 	if (Array.isArray(flag)) {

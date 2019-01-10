@@ -1,5 +1,4 @@
 import { SimpleType, SimpleTypeKind } from "./simple-type";
-import { getJSDocReturnType } from "typescript";
 
 /**
  * Converts a simple type to a string.

@@ -32,7 +32,7 @@ const isAssignable = isAssignableToType(typeA, typeB, typeChecker);
 
 ## SimpleType
 
-To make it easier to work with typescript types this library works by converting them to the interface `SimpleType`. Most functions in this library work with both `SimpleType` and the known and loved Typescript-provided `Type` interface. This means that you can easily create a complex type yourself and compare it to a native Typescript type. It also means that you can use this library to serialize types and even compare them in the browser.
+To make it easier to work with typescript types this library works by (behind the curtain) converting them to the interface `SimpleType`. Most functions in this library work with both `SimpleType` and the known and loved Typescript-provided `Type` interface. This means that you can easily create a complex type yourself and compare it to a native Typescript type. It also means that you can use this library to serialize types and even compare them in the browser.
 
 The `SimpleType` interface can be used to construct your own types for typechecking.
 
@@ -174,10 +174,9 @@ Returns true if `type` is assignable to the value.
 Returns a string representation of the simple type. The string representation matches the one Typescript generates.
 
 ### toSimpleType
-> toSimpleType(type: Type, options: Options): SimpleType
+> toSimpleType(type: Type | Node, checker: TypeChecker): SimpleType
 
 Returns a `SimpleType` that represents a native Typescript `Type`.
-- `options.checker` (TypeChecker): A `TypeChecker` is required in order to convert the type.
 
 ## Roadmap
 

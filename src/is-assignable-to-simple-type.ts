@@ -1,5 +1,5 @@
 import { SimpleTypeKind, SimpleType, isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP } from "./simple-type";
-import { and, or, zip } from "./util";
+import { and, or } from "./util";
 
 /**
  * Returns if typeB is assignable to typeA.
@@ -7,7 +7,7 @@ import { and, or, zip } from "./util";
  * @param typeB Type B
  */
 export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): boolean {
-	//console.log(require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB));
+	//console.log("###", require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "###");
 
 	if (typeA === typeB) return true;
 
@@ -15,19 +15,25 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): 
 		return true;
 	}
 
-	// Circular refs
 	switch (typeB.kind) {
-		case SimpleTypeKind.CIRCULAR_TYPE_REF:
-			return typeA === typeB.ref;
 		case SimpleTypeKind.ENUM_MEMBER:
 			return isAssignableToSimpleType(typeA, typeB.type);
 		case SimpleTypeKind.ENUM:
 			return and(typeB.types, childTypeB => isAssignableToSimpleType(typeA, childTypeB));
 		case SimpleTypeKind.UNION:
 			return and(typeB.types, childTypeB => isAssignableToSimpleType(typeA, childTypeB));
+		case SimpleTypeKind.INTERSECTION:
+			return and(typeB.types, childTypeB => isAssignableToSimpleType(typeA, childTypeB));
 	}
 
 	switch (typeA.kind) {
+		// Circular references
+		case SimpleTypeKind.CIRCULAR_TYPE_REF:
+			if (typeB.kind === SimpleTypeKind.CIRCULAR_TYPE_REF) {
+				return typeA.ref === typeB.ref || typeA.ref.name === typeB.ref.name;
+			}
+			return typeA.ref === typeB || typeA.ref.name === typeB.name;
+
 		// Literals and enum members
 		case SimpleTypeKind.NUMBER_LITERAL:
 		case SimpleTypeKind.STRING_LITERAL:
@@ -103,30 +109,33 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): 
 		// Interfaces
 		case SimpleTypeKind.INTERFACE:
 		case SimpleTypeKind.OBJECT:
-			if (typeB.kind === SimpleTypeKind.INTERFACE || typeB.kind === SimpleTypeKind.OBJECT) {
-				return (
-					and(typeA.members, memberA => {
-						// Make sure that every required prop in typeA is present
-						const memberB = typeB.members.find(memberB => memberA.name === memberB.name);
-						return memberB == null ? memberA.optional : true;
-					}) &&
-					and(typeB.members, memberB => {
-						// Do not allow new props in subtype: contravariance
-						// Strict type checking
-						const memberA = typeA.members.find(memberA => memberA.name === memberB.name);
-						if (memberA == null) return false;
-						return isAssignableToSimpleType(memberA.type, memberB.type);
-					})
-				);
+		case SimpleTypeKind.CLASS:
+			switch (typeB.kind) {
+				case SimpleTypeKind.INTERFACE:
+				case SimpleTypeKind.OBJECT:
+				case SimpleTypeKind.CLASS:
+					const membersA = (typeA.kind === SimpleTypeKind.CLASS ? [...typeA.methods, ...typeA.properties] : typeA.members);
+					const membersB = (typeB.kind === SimpleTypeKind.CLASS ? [...typeB.methods, ...typeB.properties] : typeB.members);
+
+					return (
+						and(membersA, memberA => {
+							// Make sure that every required prop in typeA is present
+							const memberB = membersB.find(memberB => memberA.name === memberB.name);
+							return memberB == null ? memberA.optional : true;
+						}) &&
+						and(membersB, memberB => {
+							// Do not allow new props in subtype: contravariance
+							// Strict type checking
+							const memberA = membersA.find(memberA => memberA.name === memberB.name);
+							if (memberA == null) return false;
+							return isAssignableToSimpleType(memberA.type, memberB.type);
+						})
+					);
+				default:
+					return false;
 			}
 
-			return false;
-
-		// Circular references
-		case SimpleTypeKind.CIRCULAR_TYPE_REF:
-			return typeA.ref === typeB;
-
 		default:
-			throw new Error("Unsupported comparison!");
+			throw new Error(`Unsupported comparison: ${typeA.kind}`);
 	}
 }

@@ -17,6 +17,8 @@
 		"esModuleInterop": true,
 		"noImplicitAny": true,
 		"allowUnusedLabels": false,
+		"allowUnreachableCode": false,
+		"noUnusedLocals": true,
 		"pretty": true
 	}
 }
