@@ -3,8 +3,8 @@ import { and, or } from "./util";
 import { tsModule } from "./ts-module";
 import { SimpleTypeModifierKind } from "./simple-type";
 
-export function isNode (obj: any): obj is Node {
-	return !("isUnion" in obj);
+export function isNode(obj: any): obj is Node {
+	return obj != null && typeof obj === "object" && "kind" in obj && "flags" in obj && "pos" in obj && "end" in obj;
 }
 
 function hasFlag(type: Type, flag: TypeFlags | TypeFlags[], op: "and" | "or" = "and"): boolean {
