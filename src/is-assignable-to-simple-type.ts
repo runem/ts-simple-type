@@ -1,12 +1,22 @@
 import { SimpleTypeKind, SimpleType, isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP } from "./simple-type";
 import { and, or } from "./util";
 
+
 /**
  * Returns if typeB is assignable to typeA.
  * @param typeA Type A
  * @param typeB Type B
  */
-export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, options: { inARef: boolean, inBRef: boolean } = { inARef: false, inBRef: false }): boolean {
+export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): boolean {
+	return isAssignableToSimpleTypeInternal(typeA, typeB);
+}
+
+interface IsAssignableToSimpleTypeOptions {
+	inARef: boolean;
+	inBRef: boolean;
+}
+
+export function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions = { inARef: false, inBRef: false }): boolean {
 	//console.log("###", require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "###");
 
 	if (typeA === typeB) return true;
@@ -22,21 +32,21 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, o
 
 	switch (typeB.kind) {
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
-			return isAssignableToSimpleType(typeA, typeB.ref, { ...options, inBRef: true })
+			return isAssignableToSimpleTypeInternal(typeA, typeB.ref, { ...options, inBRef: true })
 		case SimpleTypeKind.ENUM_MEMBER:
-			return isAssignableToSimpleType(typeA, typeB.type, options);
+			return isAssignableToSimpleTypeInternal(typeA, typeB.type, options);
 		case SimpleTypeKind.ENUM:
-			return and(typeB.types, childTypeB => isAssignableToSimpleType(typeA, childTypeB, options));
+			return and(typeB.types, childTypeB => isAssignableToSimpleTypeInternal(typeA, childTypeB, options));
 		case SimpleTypeKind.UNION:
-			return and(typeB.types, childTypeB => isAssignableToSimpleType(typeA, childTypeB, options));
+			return and(typeB.types, childTypeB => isAssignableToSimpleTypeInternal(typeA, childTypeB, options));
 		case SimpleTypeKind.INTERSECTION:
-			return and(typeB.types, childTypeB => isAssignableToSimpleType(typeA, childTypeB, options));
+			return and(typeB.types, childTypeB => isAssignableToSimpleTypeInternal(typeA, childTypeB, options));
 	}
 
 	switch (typeA.kind) {
 		// Circular references
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
-			return isAssignableToSimpleType(typeA.ref, typeB, { ...options, inARef: true })
+			return isAssignableToSimpleTypeInternal(typeA.ref, typeB, { ...options, inARef: true })
 
 		// Literals and enum members
 		case SimpleTypeKind.NUMBER_LITERAL:
@@ -46,7 +56,7 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, o
 			return isSimpleTypeLiteral(typeB) ? typeA.value === typeB.value : false;
 
 		case SimpleTypeKind.ENUM_MEMBER:
-			return isAssignableToSimpleType(typeA.type, typeB, options);
+			return isAssignableToSimpleTypeInternal(typeA.type, typeB, options);
 
 		// Primitive types
 		case SimpleTypeKind.STRING:
@@ -68,7 +78,7 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, o
 		// Arrays
 		case SimpleTypeKind.ARRAY:
 			if (typeB.kind === SimpleTypeKind.ARRAY) {
-				return isAssignableToSimpleType(typeA.type, typeB.type, options);
+				return isAssignableToSimpleTypeInternal(typeA.type, typeB.type, options);
 			}
 
 			return false;
@@ -76,7 +86,7 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, o
 		// Functions
 		case SimpleTypeKind.FUNCTION:
 			if (typeB.kind !== SimpleTypeKind.FUNCTION) return false;
-			if (!isAssignableToSimpleType(typeA.returnType, typeB.returnType, options)) return false;
+			if (!isAssignableToSimpleTypeInternal(typeA.returnType, typeB.returnType, options)) return false;
 
 			for (let i = 0; i < Math.max(typeA.argTypes.length, typeB.argTypes.length); i++) {
 				const argA = typeA.argTypes[i];
@@ -90,9 +100,9 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, o
 					return false;
 				}
 
-				if (!isAssignableToSimpleType(argA.type, argB.type, options)) {
+				if (!isAssignableToSimpleTypeInternal(argA.type, argB.type, options)) {
 					if (argA.spread && argA.type.kind === SimpleTypeKind.ARRAY && (!argB.spread && argB.type.kind !== SimpleTypeKind.ARRAY)) {
-						if (!isAssignableToSimpleType(argA.type.type, argB.type, options)) {
+						if (!isAssignableToSimpleTypeInternal(argA.type.type, argB.type, options)) {
 							return false;
 						}
 					}
@@ -104,11 +114,11 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, o
 		// Unions and enum members
 		case SimpleTypeKind.ENUM:
 		case SimpleTypeKind.UNION:
-			return or(typeA.types, childTypeA => isAssignableToSimpleType(childTypeA, typeB, options));
+			return or(typeA.types, childTypeA => isAssignableToSimpleTypeInternal(childTypeA, typeB, options));
 
 		// Intersections
 		case SimpleTypeKind.INTERSECTION:
-			return and(typeA.types, childTypeA => isAssignableToSimpleType(childTypeA, typeB, options));
+			return and(typeA.types, childTypeA => isAssignableToSimpleTypeInternal(childTypeA, typeB, options));
 
 		// Interfaces
 		case SimpleTypeKind.INTERFACE:
@@ -132,7 +142,7 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, o
 							// Strict type checking
 							const memberA = membersA.find(memberA => memberA.name === memberB.name);
 							if (memberA == null) return false;
-							return isAssignableToSimpleType(memberA.type, memberB.type, options);
+							return isAssignableToSimpleTypeInternal(memberA.type, memberB.type, options);
 						})
 					);
 				default:
