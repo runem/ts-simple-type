@@ -18,12 +18,16 @@ export enum SimpleTypeKind {
 	INTERSECTION = "INTERSECTION",
 	TUPLE = "TUPLE",
 	ARRAY = "ARRAY",
+	PROMISE = "PROMISE",
 	INTERFACE = "INTERFACE",
 	OBJECT = "OBJECT",
 	FUNCTION = "FUNCTION",
 	METHOD = "METHOD",
 	CLASS = "CLASS",
-	CIRCULAR_TYPE_REF = "CIRCULAR_TYPE_REF"
+	CIRCULAR_TYPE_REF = "CIRCULAR_TYPE_REF",
+	GENERIC_ARGUMENTS = "GENERIC_ARGUMENTS",
+	GENERIC_PARAMETER = "GENERIC_PARAMETER",
+	ALIAS = "ALIAS"
 }
 
 export enum SimpleTypeModifierKind {
@@ -57,9 +61,17 @@ export interface SimpleTypeClassMember extends SimpleTypeMemberNamed {
 	modifiers: SimpleTypeModifierKind[];
 }
 
+export interface SimpleTypeAlias extends SimpleTypeBase {
+	kind: SimpleTypeKind.ALIAS;
+	name: string;
+	target: SimpleType;
+	typeParameters?: SimpleTypeGenericParameter[];
+}
+
 export interface SimpleTypeClass extends SimpleTypeBase {
 	kind: SimpleTypeKind.CLASS;
 	ctor?: SimpleTypeFunction;
+	typeParameters?: SimpleTypeGenericParameter[];
 	properties: SimpleTypeClassMember[];
 	methods: SimpleTypeClassMember[];
 }
@@ -75,18 +87,33 @@ export interface SimpleTypeFunctionArgument {
 export interface SimpleTypeFunction extends SimpleTypeBase {
 	kind: SimpleTypeKind.FUNCTION;
 	argTypes: SimpleTypeFunctionArgument[];
+	typeParameters?: SimpleTypeGenericParameter[];
 	returnType: SimpleType;
 }
 
 export interface SimpleTypeMethod extends SimpleTypeBase {
 	kind: SimpleTypeKind.METHOD;
 	argTypes: SimpleTypeFunctionArgument[];
+	typeParameters?: SimpleTypeGenericParameter[];
 	returnType: SimpleType;
 }
 
 export interface SimpleTypeInterface extends SimpleTypeBase {
 	kind: SimpleTypeKind.INTERFACE;
 	members: SimpleTypeMemberNamed[];
+}
+
+export interface SimpleTypeGenericArguments extends SimpleTypeBase {
+	kind: SimpleTypeKind.GENERIC_ARGUMENTS;
+	name?: undefined;
+	target: SimpleType;
+	typeArguments: SimpleType[];
+}
+
+export interface SimpleTypeGenericParameter extends SimpleTypeBase {
+	name: string;
+	kind: SimpleTypeKind.GENERIC_PARAMETER;
+	default?: SimpleType;
 }
 
 export interface SimpleTypeObject extends SimpleTypeBase {
@@ -101,6 +128,11 @@ export interface SimpleTypeTuple extends SimpleTypeBase {
 
 export interface SimpleTypeArray extends SimpleTypeBase {
 	kind: SimpleTypeKind.ARRAY;
+	type: SimpleType;
+}
+
+export interface SimpleTypePromise extends SimpleTypeBase {
+	kind: SimpleTypeKind.PROMISE;
 	type: SimpleType;
 }
 
@@ -213,7 +245,11 @@ export type SimpleType =
 	| SimpleTypeAny
 	| SimpleTypeMethod
 	| SimpleTypeVoid
-	| SimpleTypeUnknown;
+	| SimpleTypePromise
+	| SimpleTypeUnknown
+	| SimpleTypeAlias
+	| SimpleTypeGenericArguments
+	| SimpleTypeGenericParameter;
 
 export function isSimpleType(type: any): type is SimpleType {
 	return typeof type === "object" && "kind" in type && Object.keys(SimpleTypeKind).find((key: string) => SimpleTypeKind[key as any] === type.kind) != null;
@@ -249,3 +285,9 @@ export const PRIMITIVE_TYPE_TO_LITERAL_MAP = ({
 	[SimpleTypeKind.BOOLEAN]: SimpleTypeKind.BOOLEAN_LITERAL,
 	[SimpleTypeKind.BIG_INT]: SimpleTypeKind.BIG_INT_LITERAL
 } as unknown) as Record<SimpleTypeKind, SimpleTypeKind | undefined>;
+
+export const IMPLICIT_GENERIC = [SimpleTypeKind.ARRAY, SimpleTypeKind.TUPLE, SimpleTypeKind.PROMISE];
+
+export function isImplicitGenericType(type: SimpleType): type is SimpleTypeArray | SimpleTypeTuple | SimpleTypePromise {
+	return IMPLICIT_GENERIC.includes(type.kind);
+}

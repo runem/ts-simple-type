@@ -1,7 +1,7 @@
-import { TypeReference, Type, ObjectType, Node, TypeFlags, TupleType, GenericType, LiteralType, BigIntLiteralType, UniqueESSymbolType, Declaration, Symbol } from "typescript";
-import { and, or } from "./util";
-import { tsModule } from "./ts-module";
+import { BigIntLiteralType, Declaration, GenericType, LiteralType, Node, ObjectType, Symbol, TupleType, Type, TypeFlags, TypeReference, UniqueESSymbolType } from "typescript";
 import { SimpleTypeModifierKind } from "./simple-type";
+import { tsModule } from "./ts-module";
+import { and, or } from "./util";
 
 export function isNode(obj: any): obj is Node {
 	return obj != null && typeof obj === "object" && "kind" in obj && "flags" in obj && "pos" in obj && "end" in obj;
@@ -122,7 +122,15 @@ export function isArray(type: Type): type is TypeReference {
 	if (!isObject(type)) return false;
 	const symbol = type.getSymbol();
 	if (symbol == null) return false;
-	return symbol.getName() === "Array"; // && getTypeArguments(type).length === 1;
+	return getTypeArguments(type).length === 1 && ["ReadonlyArray", "Array"].includes(symbol.getName());
+	//return symbol.getName() === "Array"; // && getTypeArguments(type).length === 1;
+}
+
+export function isPromise(type: Type): type is TypeReference {
+	if (!isObject(type)) return false;
+	const symbol = type.getSymbol();
+	if (symbol == null) return false;
+	return getTypeArguments(type).length === 1 && symbol.getName() === "Promise";
 }
 
 export function isTuple(type: Type): type is TupleType {

@@ -1,10 +1,13 @@
-import { SimpleType, SimpleTypeKind } from "./simple-type";
+import { SimpleType, SimpleTypeFunctionArgument, SimpleTypeKind } from "./simple-type";
+
+export interface SimpleTypeToStringOptions {}
 
 /**
  * Converts a simple type to a string.
  * @param type Simple Type
  */
 export function simpleTypeToString(type: SimpleType): string {
+	//}, options: SimpleTypeToStringOptions): string {
 	switch (type.kind) {
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
 			return type.ref.name || "[Circular]";
@@ -35,15 +38,14 @@ export function simpleTypeToString(type: SimpleType): string {
 		case SimpleTypeKind.VOID:
 			return "void";
 		case SimpleTypeKind.FUNCTION:
-			const argText = type.argTypes
-				.map(arg => {
-					return `${arg.spread ? "..." : ""}${arg.name}${arg.optional ? "?" : ""}: ${simpleTypeToString(arg.type)}`;
-				})
-				.join(", ");
+		case SimpleTypeKind.METHOD:
+			if (type.kind === SimpleTypeKind.FUNCTION && type.name != null) return type.name;
+			const argText = functionArgTypesToString(type.argTypes);
 			return `(${argText})${type.returnType != null ? ` => ${simpleTypeToString(type.returnType)}` : ""}`;
 		case SimpleTypeKind.ARRAY:
 			const hasMultipleTypes = [SimpleTypeKind.UNION, SimpleTypeKind.INTERSECTION].includes(type.type.kind);
 			let memberType = simpleTypeToString(type.type);
+			if (type.name != null && ["ReadonlyArray"].includes(type.name)) return `ReadonlyArray<${memberType}>`;
 			if (hasMultipleTypes && type.type.name == null) memberType = `(${memberType})`;
 			return `${memberType}[]`;
 		case SimpleTypeKind.UNION:
@@ -59,12 +61,37 @@ export function simpleTypeToString(type: SimpleType): string {
 		case SimpleTypeKind.INTERFACE:
 			if (type.members.length === 0) return "{}";
 			if (type.name != null) return type.name;
+		// this fallthrough is intentional
 		case SimpleTypeKind.OBJECT:
 			if (type.members.length === 0) return "{}";
-			return `{ ${type.members.map(member => `${member.name}: ${simpleTypeToString(member.type)}`).join("; ")}${type.members.length > 0 ? ";" : ""} }`;
+			return `{ ${type.members
+				.map(member => {
+					// this check needs to change in the future
+					if (member.type.kind === SimpleTypeKind.FUNCTION || member.type.kind === SimpleTypeKind.METHOD) {
+						const result = simpleTypeToString(member.type);
+						const genericParameters = member.type.typeParameters != null ? `<${member.type.typeParameters.map(simpleTypeToString).join(", ")}>` : "";
+						return `${member.name}${result.replace(" => ", ": ").replace("(", `${genericParameters}(`)}`;
+					}
+
+					return `${member.name}: ${simpleTypeToString(member.type)}`;
+				})
+				.join("; ")}${type.members.length > 0 ? ";" : ""} }`;
 		case SimpleTypeKind.TUPLE:
 			return `[${type.members.map(member => `${simpleTypeToString(member.type)}${member.optional ? "?" : ""}`).join(", ")}]`;
+		case SimpleTypeKind.GENERIC_ARGUMENTS:
+			const { target, typeArguments } = type;
+			return typeArguments.length === 0 ? target.name || "" : `${target.name}<${typeArguments.map(simpleTypeToString).join(", ")}>`;
+		case SimpleTypeKind.PROMISE:
+			return `${type.name || "Promise"}<${simpleTypeToString(type.type)}>`;
 		default:
 			return type.name || "";
 	}
+}
+
+function functionArgTypesToString(argTypes: SimpleTypeFunctionArgument[]): string {
+	return argTypes
+		.map(arg => {
+			return `${arg.spread ? "..." : ""}${arg.name}${arg.optional ? "?" : ""}: ${simpleTypeToString(arg.type)}`;
+		})
+		.join(", ");
 }

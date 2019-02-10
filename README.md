@@ -8,11 +8,13 @@
 
 ## What is this?
 
-Right now the type checker for Typescript API doesn't expose methods like `isAssignableTo`. See issue [#9879](https://github.com/Microsoft/TypeScript/issues/9879) on the Typescript github repository which has been open for 2.5 years.
+Right now the type checker for Typescript API doesn't expose methods for checking assignability and building types. See issue [#9879](https://github.com/Microsoft/TypeScript/issues/9879) and (#29432)[https://github.com/Microsoft/TypeScript/issues/29432] on the Typescript github repository.
 
 To fill in the gap while this issue is being discussed this library aims to provide the most essential helper functions for working with types in Typescript.
 
-This library has more than 350 tests comparing results to actual Typescript diagnostics.
+Furthermore this library can help you construct types (called `Simpletype`) which can be serialized and easy analyzed. 
+
+This library has more than 500 tests comparing results to actual Typescript diagnostics.
 
 ## Installation
 
@@ -180,7 +182,6 @@ Returns a `SimpleType` that represents a native Typescript `Type`.
 
 ## Roadmap
 
--   Generic types
 -   Overloaded functions
 -   Change behavior when `string literal` is assigned to an enum
--   Options to change from strict type checking
+-   Options to switch from strict type checking

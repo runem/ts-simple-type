@@ -1,7 +1,7 @@
 import { Type, TypeChecker } from "typescript";
-import { SimpleType, isSimpleType, SimpleTypeKind } from "./simple-type";
+import { isSimpleType, SimpleType, SimpleTypeKind } from "./simple-type";
 import { toSimpleType } from "./to-simple-type";
-import { or, and } from "./util";
+import { and, or } from "./util";
 
 export interface AssignableToSimpleTypeKindOptions {
 	op?: "and" | "or";
@@ -44,6 +44,12 @@ export function isAssignableToSimpleTypeKind(
 
 		case SimpleTypeKind.ENUM_MEMBER:
 			return isAssignableToSimpleTypeKind(type.type, kind, options);
+
+		case SimpleTypeKind.ALIAS:
+			return isAssignableToSimpleTypeKind(type.target, kind, options);
+
+		case SimpleTypeKind.GENERIC_PARAMETER:
+			return isAssignableToSimpleTypeKind(type.default || { kind: SimpleTypeKind.ANY }, kind, options);
 
 		default:
 			if (Array.isArray(kind)) {

@@ -1,9 +1,9 @@
-export function or<T>(list: T[], match: (arg: T) => boolean): boolean {
-	return list.find(a => match(a)) != null;
+export function or<T>(list: T[], match: (arg: T, i: number) => boolean): boolean {
+	return list.find((a, i) => match(a, i)) != null;
 }
 
-export function and<T>(list: T[], match: (arg: T) => boolean): boolean {
-	return list.find(a => !match(a)) == null;
+export function and<T>(list: T[], match: (arg: T, i: number) => boolean): boolean {
+	return list.find((a, i) => !match(a, i)) == null;
 }
 
 export function zip<T, U>(listA: T[], listB: U[]): [T, U][] | null {

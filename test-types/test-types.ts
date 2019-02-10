@@ -18,8 +18,13 @@ interface MyCircularInterface3 {
 	next: MyCircularType;
 }
 
+interface MyCircularInterface4<T> {
+	hello<U = T>(t: (MyCircularInterface4<T | null>)): void;
+}
+
 type MyCircularType = MyCircularInterface3 | string;
 
+{ const _: MyCircularInterface4<string> = {} as MyCircularInterface4<number>; }
 { const _: MyType = {} as MyType; }
 { const _: MyType = {} as MyType; }
 { const _: MyType = {} as MyType; }
@@ -32,6 +37,77 @@ type MyCircularType = MyCircularInterface3 | string;
 { const _: Event = {}; }
 { const _: EventTarget = {}; }
 { const _: PathLike = {}; }
+{ const _: PathLike = {} as PathLike; }
+{ const _: HTMLElement = {} as HTMLElement; }
+{ const _: HTMLElement = {} as ChildNode; }
+{ const _: DocumentFragment = {} as DocumentFragment; }
+{ const _: NodeListOf<HTMLButtonElement> = {} as NodeListOf<HTMLButtonElement>; }
+{ const _: ParentNode = {} as Node; }
+{ const _: HTMLSlotElement = {} as HTMLSlotElement; }
+{ const _: Element = {} as Element; }
+{ const _: EventListenerOrEventListenerObject = {} as EventListenerOrEventListenerObject; }
+{ const _: AssignedNodesOptions = {} as AssignedNodesOptions; }
+
+interface CircularA {
+	b: CircularB;
+}
+
+interface CircularB {
+	a: CircularA;
+}
+
+{ const _: CircularA | CircularB = {} as any as CircularB | CircularA; }
+{ const _: CircularA = {} as any as CircularB | CircularA; }
+{ const _: CircularB = {} as any as CircularB | CircularA; }
+{ const _: CircularA = {} as any as CircularA; }
+{ const _: CircularA = {} as any as CircularA; }
+{ const _: CircularA | number = {} as any as CircularA | number; }
+{ const _: CircularA = 123; }
+
+// Generics
+
+// Generic interfaces
+interface GenericInterface1<T, U> {
+	foo: T;
+	bar: U;
+}
+
+{ const _: GenericInterface1<boolean, number> = {} as {foo: true, bar: 123} }
+{ const _: GenericInterface1<string, number> = "hello" }
+{ const _: GenericInterface1<string, number> = {} as {foo: "hello", bar: true}; }
+
+// Generic classes
+class GenericClass1<T> {
+	foo!: T;
+	hello <U, R = string>(t: T): U | R {
+		return {} as U;
+	}
+}
+
+{ const _: GenericClass1<string> = {foo: "hello", hello<U> (t: string) { return {} as U }} }
+{ const _: GenericClass1<string> = new GenericClass1<number>(); }
+{ const _: GenericClass1<string> = {} as {hello (t: string): number }};
+
+// Generic functions
+type foo <T> = (t: T) => T | undefined;
+type foo2 = (t: string) => string | undefined;
+type foo3<U> = foo<U | string> | foo<U>;
+
+{ const _: foo2 = {} as () => 1; }
+{ const _: foo<string> = {} as () => 1; }
+{ const _: foo3<boolean> = {} as () => 1; }
+{ const _: foo<string> = {} as () => 1; }
+{ const _: foo3<boolean> = {} as () => 1; }
+{ const _: foo<string> = {} as () => 1; }
+
+// Generic types alias
+type bar <T, U> = T | U | null
+type typeAliasGeneric1<T> = string | number | T;
+type typeAliasGeneric2<T> = typeAliasGeneric1<T>
+
+{ const _: typeAliasGeneric2<boolean> = {} as typeAliasGeneric1<string>; }
+{ const _: bar<string, number> = 291; }
+{ const _: ReadonlyArray<string> = [] as string[]; }
 
 //{ const _: Promise<number> = Promise.resolve(123) }
 // Functions
@@ -105,7 +181,7 @@ class MyClassWithMethods {
 	bar() { return false; }
 }
 
-{ const _: MyClassWithMethods = new MyClassWithMethods(); }
+{ const _: MyClassWithMethods = new MyClassWithMethods("a", "b"); }
 
 
 // Enums
@@ -135,6 +211,14 @@ type MyEnumAlias = MyEnum;
 { const _: MyEnum = CodeLanguageKind.HTML as CodeLanguageKind; }
 //{ const _: ("html" | "javascript") = CodeLanguageKind.HTML as CodeLanguageKind; }
 //{ const _: MyEnum = "GREEN"; }
+
+// Arrays
+{ const _: number[] = {} as ReadonlyArray<File|string>; }
+//{ const _: number[] = {} as ReadonlyArray<number>; }
+{ const _: number[] = {} as number[]; }
+{ const _: ReadonlyArray<string> = {} as boolean[]; }
+{ const _: ReadonlyArray<string> = {} as ReadonlyArray<boolean>; }
+{ const _: ReadonlyArray<number | string> = {} as ReadonlyArray<number>; }
 
 // Big int
 { const _: BigInt = 1n as BigInt; }
@@ -227,6 +311,8 @@ type ButtonColor = "primary" | "accent" | "warn";
 { const _: ButtonColor = "foo"; }
 { const _: ButtonColor = "123"; }
 { const _: ButtonColor = 2931 as ButtonColor | number; }
+{ const _: ButtonColor | undefined = "" as ButtonColor; }
+{ const _: ButtonColor = "" as ButtonColor | undefined; }
 
 // Array
 { const _: string[] = 1; }
@@ -241,32 +327,16 @@ type ButtonColor = "primary" | "accent" | "warn";
 { const _: MyEnum[] = [MyEnum.BLUE]; }
 { const _: string[] = new Array<string>(); }
 { const _: Array<string> = [1, 2, 3]; }
-//{ const _: string[] = ["a"] as string[] | undefined; }
-//{ const _: number[][] = [1, 2, 3]; }
-//{ const _: number[][] = [[1], [2], [3]]; }
+{ const _: string[] = ["a"] as string[] | undefined; }
+{ const _: number[][] = [1, 2, 3]; }
+{ const _: number[][] = [[1], [2], [3]]; }
 
 // Tuple
-//{ const _: [number] = 1; }
-//{ const _: [number] = undefined; }
+{ const _: [number] = 1; }
+{ const _: [number] = undefined; }
 { const _: [number] = [1]; }
 { const _: [number, string, number] = [1, "hello", 2] as [number, string, number]; }
 { const _: [number, number | string, number] = [1, "hello", 2] as [number, number | string, number]; }
 { const _: [number, number | string, [string, number]] = [1, 2, ["foo", 2]] as [number, number | string, [string, number]]; }
 
 
-// Circular types
-/*{ const _: A | B = {} as any as B | A; }
-{ const _: A = {} as any as B | A; }
-{ const _: B = {} as any as B | A; }
-{ const _: A = {} as any as A; }
-{ const _: A = {} as any as A; }
-{ const _: A | number = {} as any as A | number; }
-{ const _: A = 123; }
-
-interface A {
-	b: B;
-}
-
-interface B {
-	a: A;
-}*/
