@@ -83,6 +83,8 @@ export function simpleTypeToString(type: SimpleType): string {
 			return typeArguments.length === 0 ? target.name || "" : `${target.name}<${typeArguments.map(simpleTypeToString).join(", ")}>`;
 		case SimpleTypeKind.PROMISE:
 			return `${type.name || "Promise"}<${simpleTypeToString(type.type)}>`;
+		case SimpleTypeKind.DATE:
+			return "Date";
 		default:
 			return type.name || "";
 	}

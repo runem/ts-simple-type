@@ -1,7 +1,7 @@
-import { myTestObj } from "./test-types-3";
-import { MyTestInterface, MyType } from "./test-types-2";
+import { PathLike } from "fs";
 import * as ts from "typescript";
-import {PathLike} from "fs";
+import { MyTestInterface, MyType } from "./test-types-2";
+import { myTestObj } from "./test-types-3";
 
 // Circular references
 interface MyCircularInterface1 {
@@ -19,7 +19,7 @@ interface MyCircularInterface3 {
 }
 
 interface MyCircularInterface4<T> {
-	hello<U = T>(t: (MyCircularInterface4<T | null>)): void;
+	hello<U = T> (t: (MyCircularInterface4<T | null>)): void;
 }
 
 type MyCircularType = MyCircularInterface3 | string;
@@ -72,24 +72,32 @@ interface GenericInterface1<T, U> {
 	bar: U;
 }
 
-{ const _: GenericInterface1<boolean, number> = {} as {foo: true, bar: 123} }
-{ const _: GenericInterface1<string, number> = "hello" }
-{ const _: GenericInterface1<string, number> = {} as {foo: "hello", bar: true}; }
+{ const _: GenericInterface1<boolean, number> = {} as { foo: true, bar: 123 }; }
+{ const _: GenericInterface1<string, number> = "hello"; }
+{ const _: GenericInterface1<string, number> = {} as { foo: "hello", bar: true }; }
 
 // Generic classes
 class GenericClass1<T> {
 	foo!: T;
-	hello <U, R = string>(t: T): U | R {
+
+	hello<U, R = string> (t: T): U | R {
 		return {} as U;
 	}
 }
 
-{ const _: GenericClass1<string> = {foo: "hello", hello<U> (t: string) { return {} as U }} }
+{
+	const _: GenericClass1<string> = {
+		foo: "hello", hello<U> (t: string) {
+			return {} as U;
+		}
+	};
+}
 { const _: GenericClass1<string> = new GenericClass1<number>(); }
-{ const _: GenericClass1<string> = {} as {hello (t: string): number }};
+{ const _: GenericClass1<string> = {} as { hello (t: string): number };}
+;
 
 // Generic functions
-type foo <T> = (t: T) => T | undefined;
+type foo<T> = (t: T) => T | undefined;
 type foo2 = (t: string) => string | undefined;
 type foo3<U> = foo<U | string> | foo<U>;
 
@@ -101,7 +109,7 @@ type foo3<U> = foo<U | string> | foo<U>;
 { const _: foo<string> = {} as () => 1; }
 
 // Generic types alias
-type bar <T, U> = T | U | null
+type bar<T, U> = T | U | null
 type typeAliasGeneric1<T> = string | number | T;
 type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 
@@ -112,17 +120,47 @@ type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 //{ const _: Promise<number> = Promise.resolve(123) }
 // Functions
 { const _: Hello = 123; }
-{ const _: number = (a: number, b?: MyInterface, ...args: number[]) => { return 123; } }
+{
+	const _: number = (a: number, b?: MyInterface, ...args: number[]) => {
+		return 123;
+	};
+}
 { const _: any = (...spread: number[]) => true; }
-{ const _: any = (...spread: number[]) => () => { }; }
-{ const _: ((...spread: number[]) => void) = (input: string) => { }; }
-{ const _: ((...spread: number[]) => number) = (input: number) => { return 123; }; }
+{
+	const _: any = (...spread: number[]) => () => {
+	};
+}
+{
+	const _: ((...spread: number[]) => void) = (input: string) => {
+	};
+}
+{
+	const _: ((...spread: number[]) => number) = (input: number) => {
+		return 123;
+	};
+}
 //{ const _: ((a: number, b: string) => number) = (aa: number) => { return 123; }; }
-{ const _: ((a: number, b: string) => number) = (aa: number, bb: string) => { return 123; }; }
+{
+	const _: ((a: number, b: string) => number) = (aa: number, bb: string) => {
+		return 123;
+	};
+}
 //{ const _: ((a: number, b: string) => number) = (aa: number) => { return 123; }; }
-{ const _: ((a: number) => number) = (aa: number, bb: number) => { return 123; }; }
-{ const _: any = (cb: () => boolean) => { return cb(); }; }
-{ const _: () => boolean = () => { return true; }; }
+{
+	const _: ((a: number) => number) = (aa: number, bb: number) => {
+		return 123;
+	};
+}
+{
+	const _: any = (cb: () => boolean) => {
+		return cb();
+	};
+}
+{
+	const _: () => boolean = () => {
+		return true;
+	};
+}
 
 type Hello = number;
 
@@ -131,14 +169,17 @@ interface MyInterface {
 	foo: string;
 	hello: () => void;
 }
+
 interface MyInterfaceWithOptional {
 	foo: string;
 	bar?: number;
 }
+
 interface MyInterfaceWithAllOptional {
 	foo?: string;
 	bar?: number;
 }
+
 { const _: MyInterface = { foo: "hello" } as MyInterface; }
 { const _: MyInterface = { foo: "hello" }; }
 { const _: MyInterface = {}; }
@@ -154,31 +195,62 @@ interface MyInterfaceWithAllOptional {
 { myTestObj.testType = {} as MyTestInterface; }
 
 
+interface MyInterface1 {
+	foo: string;
+}
+
+interface MyInterface2 {
+	bar: boolean;
+}
+
+interface MyInterface3 {
+	baz: number;
+}
+
+{ const _: number | string | boolean | undefined = {} as number | string; }
+{ const _: MyInterface1 | MyInterface2 | MyInterface3 | undefined = {} as MyInterface1 | MyInterface2; }
+
+
 // Class
 class MyClass {
 	foo: string = "foo";
 	bar?: "test";
 }
+
 { const _: MyClass = new MyClass(); }
 
 //{ const _: MyClass = {foo: "hello"} }
 
 class MyClassWithMethods {
-	private mySecretProp = 123;
 	myPublicProp = 123;
+	private mySecretProp = 123;
 
-	set hello(val: string) { }
-	get hello() { return "hello"; }
+	get hello () {
+		return "hello";
+	}
 
-	set setter(val: string) { }
-	get getter() { return "hello"; }
+	set hello (val: string) {
+	}
 
-	constructor(str: string)
-	constructor(str: string, str2: string)
-	constructor(str: string, str2?: string) { }
+	set setter (val: string) {
+	}
 
-	foo() { return true; }
-	bar() { return false; }
+	get getter () {
+		return "hello";
+	}
+
+	constructor (str: string)
+	constructor (str: string, str2: string)
+	constructor (str: string, str2?: string) {
+	}
+
+	foo () {
+		return true;
+	}
+
+	bar () {
+		return false;
+	}
 }
 
 { const _: MyClassWithMethods = new MyClassWithMethods("a", "b"); }
@@ -213,7 +285,7 @@ type MyEnumAlias = MyEnum;
 //{ const _: MyEnum = "GREEN"; }
 
 // Arrays
-{ const _: number[] = {} as ReadonlyArray<File|string>; }
+{ const _: number[] = {} as ReadonlyArray<File | string>; }
 //{ const _: number[] = {} as ReadonlyArray<number>; }
 { const _: number[] = {} as number[]; }
 { const _: ReadonlyArray<string> = {} as boolean[]; }
@@ -340,3 +412,8 @@ type ButtonColor = "primary" | "accent" | "warn";
 { const _: [number, number | string, [string, number]] = [1, 2, ["foo", 2]] as [number, number | string, [string, number]]; }
 
 
+// Date
+{ const _: Date = {}; }
+{ const _: Date = {} as Date; }
+{ const _: Date = new Date(); }
+{ const _: number = new Date(); }

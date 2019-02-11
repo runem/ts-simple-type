@@ -109,12 +109,14 @@ export function isMethod(type: Type): type is TypeReference {
 	if (!isObject(type)) return false;
 	const symbol = type.getSymbol();
 	if (symbol == null) return false;
-	const decl = getValueDeclaration(symbol);
+	const decl = getDeclaration(symbol);
 	if (decl == null) return false;
 	return tsModule.ts.isMethodDeclaration(decl);
 }
 
-export function getValueDeclaration(symbol: Symbol): Declaration | undefined {
+export function getDeclaration(symbol: Symbol): Declaration | undefined {
+	// Note: Somehow "symbol.declarations" can be undefined under some circumstances
+	if (symbol.declarations == null) return undefined;
 	return symbol.declarations.length > 0 ? symbol.declarations[0] : symbol.valueDeclaration;
 }
 
@@ -131,6 +133,13 @@ export function isPromise(type: Type): type is TypeReference {
 	const symbol = type.getSymbol();
 	if (symbol == null) return false;
 	return getTypeArguments(type).length === 1 && symbol.getName() === "Promise";
+}
+
+export function isDate(type: Type): type is ObjectType {
+	if (!isObject(type)) return false;
+	const symbol = type.getSymbol();
+	if (symbol == null) return false;
+	return symbol.getName() === "Date";
 }
 
 export function isTuple(type: Type): type is TupleType {

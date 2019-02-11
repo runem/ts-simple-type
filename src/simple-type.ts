@@ -17,8 +17,6 @@ export enum SimpleTypeKind {
 	ENUM_MEMBER = "ENUM_MEMBER",
 	INTERSECTION = "INTERSECTION",
 	TUPLE = "TUPLE",
-	ARRAY = "ARRAY",
-	PROMISE = "PROMISE",
 	INTERFACE = "INTERFACE",
 	OBJECT = "OBJECT",
 	FUNCTION = "FUNCTION",
@@ -27,7 +25,10 @@ export enum SimpleTypeKind {
 	CIRCULAR_TYPE_REF = "CIRCULAR_TYPE_REF",
 	GENERIC_ARGUMENTS = "GENERIC_ARGUMENTS",
 	GENERIC_PARAMETER = "GENERIC_PARAMETER",
-	ALIAS = "ALIAS"
+	ALIAS = "ALIAS",
+	DATE = "DATE",
+	ARRAY = "ARRAY",
+	PROMISE = "PROMISE",
 }
 
 export enum SimpleTypeModifierKind {
@@ -66,6 +67,10 @@ export interface SimpleTypeAlias extends SimpleTypeBase {
 	name: string;
 	target: SimpleType;
 	typeParameters?: SimpleTypeGenericParameter[];
+}
+
+export interface SimpleTypeDate extends SimpleTypeBase {
+	kind: SimpleTypeKind.DATE;
 }
 
 export interface SimpleTypeClass extends SimpleTypeBase {
@@ -248,22 +253,34 @@ export type SimpleType =
 	| SimpleTypePromise
 	| SimpleTypeUnknown
 	| SimpleTypeAlias
+	| SimpleTypeDate
 	| SimpleTypeGenericArguments
 	| SimpleTypeGenericParameter;
 
-export function isSimpleType(type: any): type is SimpleType {
+export function isSimpleType (type: any): type is SimpleType {
 	return typeof type === "object" && "kind" in type && Object.keys(SimpleTypeKind).find((key: string) => SimpleTypeKind[key as any] === type.kind) != null;
 }
 
-export type SimpleTypeLiteral = SimpleTypeBigIntLiteral | SimpleTypeBooleanLiteral | SimpleTypeStringLiteral | SimpleTypeNumberLiteral;
+export type SimpleTypeLiteral =
+	SimpleTypeBigIntLiteral
+	| SimpleTypeBooleanLiteral
+	| SimpleTypeStringLiteral
+	| SimpleTypeNumberLiteral;
 
 export const LITERAL_TYPE_KINDS = [SimpleTypeKind.STRING_LITERAL, SimpleTypeKind.NUMBER_LITERAL, SimpleTypeKind.BOOLEAN_LITERAL, SimpleTypeKind.BIG_INT_LITERAL];
 
-export function isSimpleTypeLiteral(type: SimpleType): type is SimpleTypeLiteral {
+export function isSimpleTypeLiteral (type: SimpleType): type is SimpleTypeLiteral {
 	return LITERAL_TYPE_KINDS.includes(type.kind);
 }
 
-export type SimpleTypePrimitive = SimpleTypeLiteral | SimpleTypeString | SimpleTypeNumber | SimpleTypeBoolean | SimpleTypeBigInt | SimpleTypeNull | SimpleTypeUndefined;
+export type SimpleTypePrimitive =
+	SimpleTypeLiteral
+	| SimpleTypeString
+	| SimpleTypeNumber
+	| SimpleTypeBoolean
+	| SimpleTypeBigInt
+	| SimpleTypeNull
+	| SimpleTypeUndefined;
 
 export const PRIMITIVE_TYPE_KINDS = [
 	...LITERAL_TYPE_KINDS,
@@ -275,7 +292,7 @@ export const PRIMITIVE_TYPE_KINDS = [
 	SimpleTypeKind.UNDEFINED
 ];
 
-export function isSimpleTypePrimitive(type: SimpleType): type is SimpleTypePrimitive {
+export function isSimpleTypePrimitive (type: SimpleType): type is SimpleTypePrimitive {
 	return PRIMITIVE_TYPE_KINDS.includes(type.kind);
 }
 
@@ -288,6 +305,6 @@ export const PRIMITIVE_TYPE_TO_LITERAL_MAP = ({
 
 export const IMPLICIT_GENERIC = [SimpleTypeKind.ARRAY, SimpleTypeKind.TUPLE, SimpleTypeKind.PROMISE];
 
-export function isImplicitGenericType(type: SimpleType): type is SimpleTypeArray | SimpleTypeTuple | SimpleTypePromise {
+export function isImplicitGenericType (type: SimpleType): type is SimpleTypeArray | SimpleTypeTuple | SimpleTypePromise {
 	return IMPLICIT_GENERIC.includes(type.kind);
 }

@@ -6,7 +6,7 @@ import { and, or } from "./util";
  * @param typeA Type A
  * @param typeB Type B
  */
-export function isAssignableToSimpleType (typeA: SimpleType, typeB: SimpleType): boolean {
+export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): boolean {
 	return isAssignabletoSimpleTypeInternal(typeA, typeB, {
 		inARef: false,
 		inBRef: false,
@@ -22,19 +22,20 @@ interface IsAssignableToSimpleTypeOptions {
 	genericParameterMapB: Map<string, SimpleType>;
 }
 
-function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
-	//console.log("###", require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", "###");
-
-	if (typeA === typeB && !("typeParameters" in typeA)) {
-		return true;
-	}
+function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
+	/*
+	 options = {...options};
+	 (options as any).depth = ((options as any).depth || 0) + 1;
+	 console.log( "###", " ".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###" );
+	 */
 
 	if (typeA === typeB) return true;
 
 	// Handle circular refs
 	if (options.inARef && options.inBRef) {
 		// We might need a better way of handling refs, but this check is good for now
-		return typeA.name === typeB.name;
+		return true;
+		//return typeA.name === typeB.name;
 	}
 
 	if (typeA.kind === SimpleTypeKind.UNKNOWN || typeA.kind === SimpleTypeKind.ANY || typeB.kind === SimpleTypeKind.ANY) {
@@ -114,8 +115,9 @@ function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 		// Arrays
 		case SimpleTypeKind.ARRAY:
 			if (typeB.kind === SimpleTypeKind.ARRAY) {
-				if (typeA)
-				return isAssignabletoSimpleTypeInternal(typeA.type, typeB.type, options);
+				if (typeA) {
+					return isAssignabletoSimpleTypeInternal(typeA.type, typeB.type, options);
+				}
 			}
 
 			return false;
@@ -198,12 +200,15 @@ function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 		case SimpleTypeKind.PROMISE:
 			return typeB.kind === SimpleTypeKind.PROMISE && isAssignabletoSimpleTypeInternal(typeA.type, typeB.type, options);
 
+		case SimpleTypeKind.DATE:
+			return typeB.kind === SimpleTypeKind.DATE;
+
 		//default:
 		//throw new Error(`Unsupported comparison: ${typeA.kind}`);
 	}
 }
 
-function extendTypeParameterMap (genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
+function extendTypeParameterMap(genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
 	if ("typeParameters" in genericType.target) {
 		const parameterEntries = (genericType.target.typeParameters || []).map(
 			(parameter, i) => [parameter.name, genericType.typeArguments[i] || parameter.default || { kind: SimpleTypeKind.ANY }] as [string, SimpleType]

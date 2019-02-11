@@ -1,7 +1,7 @@
 import { Type, TypeChecker } from "typescript";
-import { SimpleType, isSimpleType, SimpleTypeKind } from "./simple-type";
-import { toSimpleType } from "./to-simple-type";
 import { isAssignableToType } from "./is-assignable-to-type";
+import { isSimpleType, SimpleType, SimpleTypeKind } from "./simple-type";
+import { toSimpleType } from "./to-simple-type";
 
 /**
  * Tests if a type is assignable to a value.
@@ -28,6 +28,15 @@ export function isAssignableToValue(type: SimpleType | Type, value: any, checker
 			return isAssignableToType(type, {
 				kind: SimpleTypeKind.BOOLEAN_LITERAL,
 				value
+			});
+		} else if (value instanceof Promise) {
+			return isAssignableToType(type, {
+				kind: SimpleTypeKind.PROMISE,
+				type: { kind: SimpleTypeKind.ANY }
+			});
+		} else if (value instanceof Date) {
+			return isAssignableToType(type, {
+				kind: SimpleTypeKind.DATE
 			});
 		}
 

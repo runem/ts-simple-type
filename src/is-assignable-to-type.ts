@@ -4,7 +4,7 @@ import { isSimpleType, SimpleType } from "./simple-type";
 import { toSimpleType } from "./to-simple-type";
 import { isNode } from "./ts-util";
 
-const simpleTypeCache = new WeakMap<Type, SimpleType>();
+const simpleTypeCache = new Map<Type, SimpleType>();
 const isAssignableTypeCache = new WeakMap<SimpleType, WeakMap<SimpleType, boolean>>();
 
 /**
@@ -46,9 +46,9 @@ export function isAssignableToType (typeA: Type | Node | SimpleType, typeB: Type
 	}
 
 	/*console.log("Type A");
-	 console.dir(simpleTypeA, { depth: 10 });
-	 console.log("Type B");
-	 console.dir(simpleTypeB, { depth: 10 });*/
+	console.dir(simpleTypeA, { depth: 5 });
+	console.log("Type B");
+	console.dir(simpleTypeB, { depth: 5 });*/
 
 	const result = isAssignableToSimpleType(simpleTypeA, simpleTypeB);
 
