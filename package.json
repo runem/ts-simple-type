@@ -1,6 +1,6 @@
 {
   "name": "ts-simple-type",
-  "version": "0.2.18",
+  "version": "0.2.19",
   "description": "Relationship type checker functions for Typescript types.",
   "author": "runem",
   "license": "MIT",
@@ -32,8 +32,7 @@
   "files": [
     "lib"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^10.12.12",
     "@wessberg/rollup-plugin-ts": "^1.1.9",
