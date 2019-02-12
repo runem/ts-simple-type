@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.20"></a>
+## [0.2.20](https://github.com/runem/ts-simple-type/compare/v0.2.19...v0.2.20) (2019-02-12)
+
+
+### Bug Fixes
+
+* Fix problem where recursive types created from the cache would crash the type checking ([b62167a](https://github.com/runem/ts-simple-type/commit/b62167a))
+
+
+
 <a name="0.2.19"></a>
 ## [0.2.19](https://github.com/runem/ts-simple-type/compare/v0.2.18...v0.2.19) (2019-02-11)
 
