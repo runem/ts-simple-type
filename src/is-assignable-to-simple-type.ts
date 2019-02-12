@@ -6,36 +6,42 @@ import { and, or } from "./util";
  * @param typeA Type A
  * @param typeB Type B
  */
-export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): boolean {
+export function isAssignableToSimpleType (typeA: SimpleType, typeB: SimpleType): boolean {
 	return isAssignabletoSimpleTypeInternal(typeA, typeB, {
-		inARef: false,
-		inBRef: false,
+		inCircularA: false,
+		inCircularB: false,
+		insideType: new Set(),
 		genericParameterMapA: new Map(),
 		genericParameterMapB: new Map()
 	});
 }
 
 interface IsAssignableToSimpleTypeOptions {
-	inARef: boolean;
-	inBRef: boolean;
+	inCircularA: boolean;
+	inCircularB: boolean;
+	insideType: Set<SimpleType>;
 	genericParameterMapA: Map<string, SimpleType>;
 	genericParameterMapB: Map<string, SimpleType>;
 }
 
-function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
+function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
 	/*
 	 options = {...options};
 	 (options as any).depth = ((options as any).depth || 0) + 1;
 	 console.log( "###", " ".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###" );
 	 */
 
-	if (typeA === typeB) return true;
-
-	// Handle circular refs
-	if (options.inARef && options.inBRef) {
-		// We might need a better way of handling refs, but this check is good for now
+	if (typeA === typeB) {
 		return true;
-		//return typeA.name === typeB.name;
+	}
+
+	// We might need a better way of handling refs, but these check are good for now
+	if (options.insideType.has(typeA)) {
+		return true;
+	}
+
+	if (options.inCircularA && options.inCircularB) {
+		return true;
 	}
 
 	if (typeA.kind === SimpleTypeKind.UNKNOWN || typeA.kind === SimpleTypeKind.ANY || typeB.kind === SimpleTypeKind.ANY) {
@@ -44,7 +50,11 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 	switch (typeB.kind) {
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
-			return isAssignabletoSimpleTypeInternal(typeA, typeB.ref, { ...options, inBRef: true });
+			return isAssignabletoSimpleTypeInternal(typeA, typeB.ref, {
+				...options,
+				inCircularB: true,
+				insideType: new Set([...options.insideType, typeB])
+			});
 		case SimpleTypeKind.ENUM_MEMBER:
 			return isAssignabletoSimpleTypeInternal(typeA, typeB.type, options);
 		case SimpleTypeKind.ENUM:
@@ -68,7 +78,11 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	switch (typeA.kind) {
 		// Circular references
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
-			return isAssignabletoSimpleTypeInternal(typeA.ref, typeB, { ...options, inARef: true });
+			return isAssignabletoSimpleTypeInternal(typeA.ref, typeB, {
+				...options,
+				inCircularA: true,
+				insideType: new Set([...options.insideType, typeA])
+			});
 
 		// Literals and enum members
 		case SimpleTypeKind.NUMBER_LITERAL:
@@ -171,6 +185,11 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 					const membersA = typeA.kind === SimpleTypeKind.CLASS ? [...typeA.methods, ...typeA.properties] : typeA.members;
 					const membersB = typeB.kind === SimpleTypeKind.CLASS ? [...typeB.methods, ...typeB.properties] : typeB.members;
 
+					const newOptions = {
+						...options,
+						insideType: new Set([...options.insideType, typeA, typeB])
+					};
+
 					return (
 						and(membersA, memberA => {
 							// Make sure that every required prop in typeA is present
@@ -182,7 +201,7 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 							// Strict type checking
 							const memberA = membersA.find(memberA => memberA.name === memberB.name);
 							if (memberA == null) return false;
-							return isAssignabletoSimpleTypeInternal(memberA.type, memberB.type, options);
+							return isAssignabletoSimpleTypeInternal(memberA.type, memberB.type, newOptions);
 						})
 					);
 				default:
@@ -208,7 +227,7 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	}
 }
 
-function extendTypeParameterMap(genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
+function extendTypeParameterMap (genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
 	if ("typeParameters" in genericType.target) {
 		const parameterEntries = (genericType.target.typeParameters || []).map(
 			(parameter, i) => [parameter.name, genericType.typeArguments[i] || parameter.default || { kind: SimpleTypeKind.ANY }] as [string, SimpleType]

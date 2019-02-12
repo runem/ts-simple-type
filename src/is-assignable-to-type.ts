@@ -4,7 +4,7 @@ import { isSimpleType, SimpleType } from "./simple-type";
 import { toSimpleType } from "./to-simple-type";
 import { isNode } from "./ts-util";
 
-const simpleTypeCache = new Map<Type, SimpleType>();
+const simpleTypeCache = new WeakMap<Type, SimpleType>();
 const isAssignableTypeCache = new WeakMap<SimpleType, WeakMap<SimpleType, boolean>>();
 
 /**
