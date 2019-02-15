@@ -7,7 +7,7 @@ import { simpleTypeToString } from "./simple-type-to-string";
  * @param simpleType
  */
 export function toTypeString(simpleType: SimpleType): string;
-export function toTypeString(type: Type, checker: TypeChecker): string;
+export function toTypeString(type: SimpleType | Type, checker: TypeChecker): string;
 export function toTypeString(type: SimpleType | Type, checker?: TypeChecker): string {
 	if (isSimpleType(type)) {
 		return simpleTypeToString(type);
