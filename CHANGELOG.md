@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.23"></a>
+## [0.2.23](https://github.com/runem/ts-simple-type/compare/v0.2.22...v0.2.23) (2019-02-15)
+
+
+### Bug Fixes
+
+* Issue where isAssignableToSimpleTypeKind would fail with type 'ANY' ([38d7743](https://github.com/runem/ts-simple-type/commit/38d7743))
+
+
+
 <a name="0.2.22"></a>
 ## [0.2.22](https://github.com/runem/ts-simple-type/compare/v0.2.21...v0.2.22) (2019-02-15)
 
