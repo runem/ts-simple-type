@@ -28,7 +28,7 @@ export function isAssignableToSimpleTypeKind(
 	if (!isSimpleType(type)) {
 		return isAssignableToSimpleTypeKind(toSimpleType(type, optionsOrChecker as TypeChecker), kind, options);
 	} else {
-		options = optionsOrChecker as AssignableToSimpleTypeKindOptions;
+		options = optionsOrChecker as AssignableToSimpleTypeKindOptions || {};
 	}
 
 	switch (type.kind) {
