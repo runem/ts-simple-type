@@ -8,7 +8,7 @@
 
 ## What is this?
 
-Right now the type checker for Typescript API doesn't expose methods for checking assignability and building types. See issue [#9879](https://github.com/Microsoft/TypeScript/issues/9879) and (#29432)[https://github.com/Microsoft/TypeScript/issues/29432] on the Typescript github repository.
+Right now the type checker for Typescript API doesn't expose methods for checking assignability and building types. See issue [#9879](https://github.com/Microsoft/TypeScript/issues/9879) and [#29432](https://github.com/Microsoft/TypeScript/issues/29432) on the Typescript github repository.
 
 To fill in the gap while this issue is being discussed this library aims to provide the most essential helper functions for working with types in Typescript.
 
