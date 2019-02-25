@@ -1,7 +1,6 @@
 # ts-simple-type
 
 <a href="https://npmcharts.com/compare/ts-simple-type?minimal=true"><img alt="Downloads per month" src="https://img.shields.io/npm/dm/ts-simple-type.svg" height="20"></img></a>
-<a href="https://david-dm.org/runem/ts-simple-type"><img alt="Dependencies" src="https://img.shields.io/david/runem/ts-simple-type.svg" height="20"></img></a>
 <a href="https://www.npmjs.com/package/ts-simple-type"><img alt="NPM Version" src="https://badge.fury.io/js/ts-simple-type.svg" height="20"></img></a>
 <a href="https://github.com/runem/ts-simple-type/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/runem/ts-simple-type.svg" height="20"></img></a>
 <a href="https://opensource.org/licenses/MIT"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-yellow.svg" height="20"></img></a>
@@ -12,9 +11,9 @@ Right now the type checker for Typescript API doesn't expose methods for checkin
 
 To fill in the gap while this issue is being discussed this library aims to provide the most essential helper functions for working with types in Typescript.
 
-Furthermore this library can help you construct types (called `Simpletype`) which can be serialized and easy analyzed. 
+Furthermore this library can help you construct types (called `SimpleType`) which can be serialized and easy analyzed. 
 
-This library has more than 500 tests comparing results to actual Typescript diagnostics.
+This library has more than 500 tests comparing results to actual Typescript diagnostics (see [test-types.ts](https://github.com/runem/ts-simple-type/blob/master/test-types/test-types.ts)).
 
 ## Installation
 
