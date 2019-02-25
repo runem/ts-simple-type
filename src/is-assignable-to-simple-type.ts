@@ -180,7 +180,7 @@ function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 		case SimpleTypeKind.CLASS:
 			// If there are no members check that "typeB" is not assignable to 'null' and 'undefined'.
 			// Here we allow assigning anything but 'null' and 'undefined' to the type '{}'
-			if ("members" in typeA && typeA.members.length === 0) {
+			if ("members" in typeA && (typeA.members == null || typeA.members.length === 0)) {
 				return !isAssignabletoSimpleTypeInternal(
 					{
 						kind: SimpleTypeKind.UNION,
@@ -195,8 +195,8 @@ function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 				case SimpleTypeKind.INTERFACE:
 				case SimpleTypeKind.OBJECT:
 				case SimpleTypeKind.CLASS:
-					const membersA = typeA.kind === SimpleTypeKind.CLASS ? [...typeA.methods, ...typeA.properties] : typeA.members;
-					const membersB = typeB.kind === SimpleTypeKind.CLASS ? [...typeB.methods, ...typeB.properties] : typeB.members;
+					const membersA = typeA.kind === SimpleTypeKind.CLASS ? [...typeA.methods, ...typeA.properties] : typeA.members || [];
+					const membersB = typeB.kind === SimpleTypeKind.CLASS ? [...typeB.methods, ...typeB.properties] : typeB.members || [];
 
 					const newOptions = {
 						...options,

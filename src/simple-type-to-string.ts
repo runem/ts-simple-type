@@ -62,7 +62,7 @@ export function simpleTypeToString(type: SimpleType): string {
 			if (type.name != null) return type.name;
 		// this fallthrough is intentional
 		case SimpleTypeKind.OBJECT:
-			if (type.members.length === 0) return "{}";
+			if (type.members == null || type.members.length === 0) return "{}";
 			return `{ ${type.members
 				.map(member => {
 					// this check needs to change in the future

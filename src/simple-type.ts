@@ -105,7 +105,7 @@ export interface SimpleTypeMethod extends SimpleTypeBase {
 
 export interface SimpleTypeInterface extends SimpleTypeBase {
 	kind: SimpleTypeKind.INTERFACE;
-	members: SimpleTypeMemberNamed[];
+	members?: SimpleTypeMemberNamed[];
 }
 
 export interface SimpleTypeGenericArguments extends SimpleTypeBase {
@@ -123,7 +123,7 @@ export interface SimpleTypeGenericParameter extends SimpleTypeBase {
 
 export interface SimpleTypeObject extends SimpleTypeBase {
 	kind: SimpleTypeKind.OBJECT;
-	members: SimpleTypeMemberNamed[];
+	members?: SimpleTypeMemberNamed[];
 }
 
 export interface SimpleTypeTuple extends SimpleTypeBase {
