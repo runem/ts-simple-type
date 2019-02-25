@@ -117,7 +117,13 @@ type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 { const _: bar<string, number> = 291; }
 { const _: ReadonlyArray<string> = [] as string[]; }
 
-//{ const _: Promise<number> = Promise.resolve(123) }
+// Promise
+{ const _: Promise<number> = Promise.resolve(123) }
+{ const _: Promise<string> = Promise.resolve(123) }
+{ const _: Promise<string> = Promise.resolve("hello") }
+{ const _: Promise<void> = Promise.resolve("hello") }
+{ const _: Promise<{}> = Promise.resolve("hello") }
+
 // Functions
 { const _: Hello = 123; }
 {
@@ -277,6 +283,8 @@ type MyEnumAlias = MyEnum;
 { const _: MyEnum = true; }
 { const _: MyEnum = 123; }
 { const _: MyEnum = "foo"; }
+{ const _: MyEnum.BLUE = "foo"; }
+{ const _: MyEnum.GREEN = MyEnum.GREEN; }
 { const _: MyEnumAlias = MyEnum.RED; }
 { const _: ("html" | "javascript") = CodeLanguageKind.HTML; }
 { const _: CodeLanguageKind = CodeLanguageKind.HTML as CodeLanguageKind; }
@@ -302,6 +310,7 @@ type MyEnumAlias = MyEnum;
 // Bool
 { const _: boolean = true; }
 { const _: boolean = 123; }
+{ const _: number = false; }
 { const _: boolean = "foo"; }
 { const _: boolean = [1, 2, 3] as number[]; }
 { const _: boolean = [1, "foo", 2] as [number, string, number]; }
@@ -408,6 +417,7 @@ type ButtonColor = "primary" | "accent" | "warn";
 { const _: [number] = undefined; }
 { const _: [number] = [1]; }
 { const _: [number, string, number] = [1, "hello", 2] as [number, string, number]; }
+{ const _: [string] = {} as [1, "hello", 2]; }
 { const _: [number, number | string, number] = [1, "hello", 2] as [number, number | string, number]; }
 { const _: [number, number | string, [string, number]] = [1, 2, ["foo", 2]] as [number, number | string, [string, number]]; }
 
@@ -417,5 +427,27 @@ type ButtonColor = "primary" | "accent" | "warn";
 { const _: Date = {} as Date; }
 { const _: Date = new Date(); }
 { const _: number = new Date(); }
+{ const _: Date = "hello" }
+{ const _: Date = 1239853 }
 
+// Object
+interface EmptyInterface { }
 
+{ const _: {} = {foo: true}; }
+{ const _: {} = null; }
+{ const _: {} = undefined; }
+{ const _: EmptyInterface = {foo: true}; }
+{ const _: EmptyInterface = {foo: null}; }
+{ const _: EmptyInterface = null; }
+{ const _: EmptyInterface = {} as string | null; }
+{ const _: EmptyInterface = undefined; }
+{ const _: EmptyInterface = new MyClass(); }
+{ const _: {} = {} as Date; }
+{ const _: {} = "hello"; }
+{ const _: {} = 1938483; }
+{ const _: EmptyInterface = 1938483; }
+{ const _: {} = {}; }
+{ const _: {} = new MyClass(); }
+{ const _: {} = MyEnum.BLUE; }
+{ const _: {hello: string} = {} as {foo: "bar"}; }
+{ const _: {hello: string} = {}; }

@@ -59,7 +59,6 @@ export function simpleTypeToString(type: SimpleType): string {
 			if (type.name != null) return type.name;
 			return type.types.map(simpleTypeToString).join(" & ");
 		case SimpleTypeKind.INTERFACE:
-			if (type.members.length === 0) return "{}";
 			if (type.name != null) return type.name;
 		// this fallthrough is intentional
 		case SimpleTypeKind.OBJECT:
