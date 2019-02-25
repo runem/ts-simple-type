@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.24"></a>
+## [0.2.24](https://github.com/runem/ts-simple-type/compare/v0.2.23...v0.2.24) (2019-02-25)
+
+
+### Features
+
+* Allow assigning anything but 'null' and 'undefined' to the type '{}' ([5f0b097](https://github.com/runem/ts-simple-type/commit/5f0b097))
+
+
+
 <a name="0.2.23"></a>
 ## [0.2.23](https://github.com/runem/ts-simple-type/compare/v0.2.22...v0.2.23) (2019-02-15)
 
