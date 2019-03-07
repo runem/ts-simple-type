@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.26"></a>
+## [0.2.26](https://github.com/runem/ts-simple-type/compare/v0.2.24...v0.2.26) (2019-03-07)
+
+
+### Features
+
+* isAssignableToSimpleTypeKind now treats kind OBJECT without members as kind ANY ([b75ff9a](https://github.com/runem/ts-simple-type/commit/b75ff9a))
+
+
+
 <a name="0.2.25"></a>
 ## [0.2.25](https://github.com/runem/ts-simple-type/compare/v0.2.24...v0.2.25) (2019-02-25)
 
