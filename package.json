@@ -1,6 +1,6 @@
 {
   "name": "ts-simple-type",
-  "version": "0.2.26",
+  "version": "0.2.27",
   "description": "Relationship type checker functions for Typescript types.",
   "author": "runem",
   "license": "MIT",
