@@ -31,11 +31,17 @@ export function isAssignableToSimpleTypeKind (
 		options = optionsOrChecker as AssignableToSimpleTypeKindOptions || {};
 	}
 
-	// Make sure that an object without members is treated as ANY
+	// Make sure that an object without members are treated as ANY
 	switch (type.kind) {
 		case SimpleTypeKind.OBJECT:
 			if (type.members == null || type.members.length === 0) {
 				return isAssignableToSimpleTypeKind({ kind: SimpleTypeKind.ANY }, kind, options);
+			}
+			break;
+
+		case SimpleTypeKind.ANY:
+			if (options.matchAny) {
+				return true;
 			}
 			break;
 	}
@@ -47,9 +53,6 @@ export function isAssignableToSimpleTypeKind (
 
 		case SimpleTypeKind.INTERSECTION:
 			return and(type.types, childType => isAssignableToSimpleTypeKind(childType, kind, options));
-
-		case SimpleTypeKind.ANY:
-			return options.matchAny || false;
 
 		case SimpleTypeKind.ENUM_MEMBER:
 			return isAssignableToSimpleTypeKind(type.type, kind, options);
