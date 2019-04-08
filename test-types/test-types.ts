@@ -188,6 +188,10 @@ type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 { const _: PromiseLike<string> = {} as string; }
 { const _: PromiseLike<string> = {} as Promise<string>; }
 
+// ArrayLike
+{ const _: ArrayLike<string> = {} as number; }
+{ const _: ArrayLike<string> = ["hello"]; }
+
 // Void
 { const _: void = {} as string; }
 { const _: void = {} as number; }

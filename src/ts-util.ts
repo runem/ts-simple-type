@@ -124,7 +124,7 @@ export function isArray(type: Type): type is TypeReference {
 	if (!isObject(type)) return false;
 	const symbol = type.getSymbol();
 	if (symbol == null) return false;
-	return getTypeArguments(type).length === 1 && ["ReadonlyArray", "Array"].includes(symbol.getName());
+	return getTypeArguments(type).length === 1 && ["ArrayLike", "ReadonlyArray", "Array"].includes(symbol.getName());
 	//return symbol.getName() === "Array"; // && getTypeArguments(type).length === 1;
 }
 
@@ -132,7 +132,7 @@ export function isPromise(type: Type): type is TypeReference {
 	if (!isObject(type)) return false;
 	const symbol = type.getSymbol();
 	if (symbol == null) return false;
-	return getTypeArguments(type).length === 1 && symbol.getName() === "Promise";
+	return getTypeArguments(type).length === 1 && ["PromiseLike", "Promise"].includes(symbol.getName())
 }
 
 export function isDate(type: Type): type is ObjectType {

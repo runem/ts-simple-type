@@ -47,7 +47,7 @@ export function simpleTypeToString(type: SimpleType): string {
 		case SimpleTypeKind.ARRAY:
 			const hasMultipleTypes = [SimpleTypeKind.UNION, SimpleTypeKind.INTERSECTION].includes(type.type.kind);
 			let memberType = simpleTypeToString(type.type);
-			if (type.name != null && ["ReadonlyArray"].includes(type.name)) return `ReadonlyArray<${memberType}>`;
+			if (type.name != null && ["ArrayLike", "ReadonlyArray"].includes(type.name)) return `${type.name}<${memberType}>`;
 			if (hasMultipleTypes && type.type.name == null) memberType = `(${memberType})`;
 			return `${memberType}[]`;
 		case SimpleTypeKind.UNION:
