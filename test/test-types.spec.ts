@@ -19,10 +19,10 @@ const RELEVANT_LINES = (() => {
 
 interface VisitContext {
 	checker: TypeChecker;
-	foundTest (line: number, typeA: Type, typeB: Type, node: Node): void;
+	foundTest(line: number, typeA: Type, typeB: Type, node: Node): void;
 }
 
-function visit (node: ts.Node, ctx: VisitContext) {
+function visit(node: ts.Node, ctx: VisitContext) {
 	const { checker } = ctx;
 
 	if (ts.isVariableDeclaration(node) && node.initializer != null) {
@@ -72,7 +72,7 @@ visit(sourceFile, {
 	}
 });
 
-function executeToStringTest (line: number, typeA: Type, typeB: Type, { checker }: { checker: TypeChecker; node: VariableDeclaration }) {
+function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }: { checker: TypeChecker; node: VariableDeclaration }) {
 	const typeAStr = checker.typeToString(typeA);
 
 	test(`${line + 1}: simpleTypeToString('${typeAStr}')`, t => {
@@ -105,7 +105,7 @@ function executeToStringTest (line: number, typeA: Type, typeB: Type, { checker 
 	});
 }
 
-function executeTypeCheckerTest (line: number, typeA: Type, typeB: Type, { checker, shouldBeAssignable }: { checker: TypeChecker; node: VariableDeclaration; shouldBeAssignable: boolean }) {
+function executeTypeCheckerTest(line: number, typeA: Type, typeB: Type, { checker, shouldBeAssignable }: { checker: TypeChecker; node: VariableDeclaration; shouldBeAssignable: boolean }) {
 	const typeAStr = checker.typeToString(typeA);
 	const typeBStr = checker.typeToString(typeB);
 
@@ -115,12 +115,12 @@ function executeTypeCheckerTest (line: number, typeA: Type, typeB: Type, { check
 		if (shouldBeAssignable !== isAssignable) {
 			const simpleTypeA = toSimpleType(typeA, checker);
 			const simpleTypeB = toSimpleType(typeB, checker);
-			console.dir(simpleTypeA, {depth: 10});
-			console.dir(simpleTypeB, {depth: 10});
+			//console.dir(simpleTypeA, { depth: 10 });
+			//console.dir(simpleTypeB, { depth: 10 });
 			return t.fail(
 				`${isAssignable ? "Can" : "Can't"} assign '${typeBStr}' (${simpleTypeB.kind}) to '${typeAStr}' (${simpleTypeA.kind}) but ${
 					shouldBeAssignable ? "it should be allowed!" : "it shouldn't be allowed!"
-					}`
+				}`
 			);
 		}
 

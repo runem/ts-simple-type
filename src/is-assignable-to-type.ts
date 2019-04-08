@@ -8,7 +8,6 @@ const simpleTypeCache = new WeakMap<Type, SimpleType>();
 const isAssignableTypeCache = new WeakMap<SimpleType, WeakMap<SimpleType, boolean>>();
 
 /**
- * Test if typeB is assignable to type B.
  * Tests if "typeA = typeB" in strict mode.
  * @param typeA Type A
  * @param typeB Type B

@@ -94,7 +94,22 @@ class GenericClass1<T> {
 }
 { const _: GenericClass1<string> = new GenericClass1<number>(); }
 { const _: GenericClass1<string> = {} as { hello (t: string): number };}
-;
+
+// Inheritance
+interface SampleInterface {
+	readonly optional?: boolean;
+	readonly required: number;
+}
+
+class SampleClassOne implements SampleInterface {
+	readonly required = 1;
+}
+
+{ const _: SampleClassOne = new SampleClassOne() }
+{ const _: SampleInterface = new SampleClassOne() }
+{ const _: SampleClassOne = {} as SampleInterface }
+{ const _: SampleClassOne = {} as SampleInterface }
+{ const _: SampleInterface = new SampleClassOne() }
 
 // Generic functions
 type foo<T> = (t: T) => T | undefined;
@@ -440,6 +455,8 @@ type ButtonColor = "primary" | "accent" | "warn";
 { const _: string[] = ["a"] as string[] | undefined; }
 { const _: number[][] = [1, 2, 3]; }
 { const _: number[][] = [[1], [2], [3]]; }
+{ const _: Array<number> = [] as Array<undefined>; }
+{ const _: Array<undefined> = [] as Array<number>; }
 
 // Tuple
 { const _: [number] = 1; }
