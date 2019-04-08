@@ -1,51 +1,7 @@
 import { Declaration, Node, Symbol, Type, TypeChecker } from "typescript";
-import {
-	isImplicitGenericType,
-	isSimpleTypeLiteral,
-	PRIMITIVE_TYPE_KINDS,
-	SimpleType,
-	SimpleTypeAlias,
-	SimpleTypeBooleanLiteral,
-	SimpleTypeClassMember,
-	SimpleTypeEnumMember,
-	SimpleTypeFunction,
-	SimpleTypeFunctionArgument,
-	SimpleTypeGenericParameter,
-	SimpleTypeInterface,
-	SimpleTypeKind,
-	SimpleTypeLiteral,
-	SimpleTypeMethod,
-	SimpleTypeNull,
-	SimpleTypeObject,
-	SimpleTypeUndefined
-} from "./simple-type";
+import { isImplicitGenericType, isSimpleTypeLiteral, PRIMITIVE_TYPE_KINDS, SimpleType, SimpleTypeAlias, SimpleTypeBooleanLiteral, SimpleTypeClassMember, SimpleTypeEnumMember, SimpleTypeFunction, SimpleTypeFunctionArgument, SimpleTypeGenericParameter, SimpleTypeInterface, SimpleTypeKind, SimpleTypeLiteral, SimpleTypeMethod, SimpleTypeNull, SimpleTypeObject, SimpleTypeUndefined } from "./simple-type";
 import { tsModule } from "./ts-module";
-import {
-	getDeclaration,
-	getModifiersFromDeclaration,
-	getTypeArguments,
-	isArray,
-	isBigInt,
-	isBigIntLiteral,
-	isBoolean,
-	isBooleanLiteral,
-	isDate,
-	isEnum,
-	isFunction,
-	isLiteral,
-	isMethod,
-	isNode,
-	isNull,
-	isNumber,
-	isObject,
-	isObjectTypeReference,
-	isPromise,
-	isString,
-	isTuple,
-	isUndefined,
-	isUnknown,
-	isVoid
-} from "./ts-util";
+import { getDeclaration, getModifiersFromDeclaration, getTypeArguments, isArray, isBigInt, isBigIntLiteral, isBoolean, isBooleanLiteral, isDate, isEnum, isFunction, isLiteral, isMethod, isNode, isNull, isNumber, isObject, isObjectTypeReference, isPromise, isString, isTuple, isUndefined, isUnknown, isVoid } from "./ts-util";
 
 /**
  * Converts a Typescript type to a "SimpleType"
@@ -53,9 +9,9 @@ import {
  * @param checker
  * @param cache
  */
-export function toSimpleType(type: Node, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType;
-export function toSimpleType(type: Type, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType;
-export function toSimpleType(type: Type | Node, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType {
+export function toSimpleType (type: Node, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType;
+export function toSimpleType (type: Type, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType;
+export function toSimpleType (type: Type | Node, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType {
 	if (isNode(type)) {
 		// "type" is a "Node", convert it to a "Type" and continue.
 		return toSimpleType(checker.getTypeAtLocation(type), checker);
@@ -74,7 +30,7 @@ export interface ToSimpleTypeOptions {
 	checker: TypeChecker;
 }
 
-function toSimpleTypeInternalCaching(type: Type, options: ToSimpleTypeOptions): SimpleType {
+function toSimpleTypeInternalCaching (type: Type, options: ToSimpleTypeOptions): SimpleType {
 	const placeholder: SimpleType = {} as any;
 
 	// Cache the result of the conversion to a SimpleType if the type doesn't refer to an alias and is not a type parameter.
@@ -125,7 +81,7 @@ function toSimpleTypeInternalCaching(type: Type, options: ToSimpleTypeOptions): 
  * @param type
  * @param options
  */
-function liftGenericType(simpleType: SimpleType, type: Type, options: ToSimpleTypeOptions): SimpleType {
+function liftGenericType (simpleType: SimpleType, type: Type, options: ToSimpleTypeOptions): SimpleType {
 	// Check for alias reference
 	if (type.aliasSymbol != null) {
 		const aliasDeclaration = getDeclaration(type.aliasSymbol);
@@ -172,7 +128,7 @@ function liftGenericType(simpleType: SimpleType, type: Type, options: ToSimpleTy
 	return simpleType;
 }
 
-function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleType {
+function toSimpleTypeInternal (type: Type, options: ToSimpleTypeOptions): SimpleType {
 	const { checker } = options;
 
 	const symbol = type.getSymbol();
@@ -383,7 +339,7 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 	};
 }
 
-function simplifySimpleTypeArray(types: SimpleType[]): SimpleType[] {
+function simplifySimpleTypeArray (types: SimpleType[]): SimpleType[] {
 	let newTypes: SimpleType[] = [...types];
 	const NULLABLE_TYPE_KINDS = [SimpleTypeKind.UNDEFINED, SimpleTypeKind.NULL];
 
@@ -419,7 +375,7 @@ function simplifySimpleTypeArray(types: SimpleType[]): SimpleType[] {
 	return newTypes;
 }
 
-function literalToSimpleType(type: Type, checker: TypeChecker): SimpleTypeLiteral | undefined {
+function literalToSimpleType (type: Type, checker: TypeChecker): SimpleTypeLiteral | undefined {
 	if (type.isNumberLiteral()) {
 		return {
 			kind: SimpleTypeKind.NUMBER_LITERAL,
@@ -444,7 +400,7 @@ function literalToSimpleType(type: Type, checker: TypeChecker): SimpleTypeLitera
 	}
 }
 
-function getSimpleFunctionFromDeclaration(functionDeclaration: Declaration, options: ToSimpleTypeOptions, checkReturnType: boolean): SimpleTypeFunction | SimpleTypeMethod | undefined {
+function getSimpleFunctionFromDeclaration (functionDeclaration: Declaration, options: ToSimpleTypeOptions, checkReturnType: boolean): SimpleTypeFunction | SimpleTypeMethod | undefined {
 	const { checker } = options;
 
 	const symbol = checker.getSymbolAtLocation(functionDeclaration);
@@ -482,7 +438,7 @@ function getSimpleFunctionFromDeclaration(functionDeclaration: Declaration, opti
 
 const BLACKLISTED_SYMBOL_NAMES = ["__type", "__object", "__function"];
 
-function getRealSymbolName(symbol: Symbol): string | undefined {
+function getRealSymbolName (symbol: Symbol): string | undefined {
 	const name = symbol.getName();
 	if (name != null && BLACKLISTED_SYMBOL_NAMES.includes(name)) {
 		return undefined;
@@ -491,20 +447,22 @@ function getRealSymbolName(symbol: Symbol): string | undefined {
 	return name;
 }
 
-function getTypeParameters(declaration: Declaration | undefined, options: ToSimpleTypeOptions): SimpleTypeGenericParameter[] | undefined {
+function getTypeParameters (declaration: Declaration | undefined, options: ToSimpleTypeOptions): SimpleTypeGenericParameter[] | undefined {
 	if (declaration == null) return undefined;
 
 	if (
 		tsModule.ts.isClassDeclaration(declaration) ||
 		tsModule.ts.isFunctionDeclaration(declaration) ||
+		tsModule.ts.isFunctionTypeNode(declaration) ||
 		tsModule.ts.isTypeAliasDeclaration(declaration) ||
-		tsModule.ts.isMethodDeclaration(declaration)
+		tsModule.ts.isMethodDeclaration(declaration) ||
+		tsModule.ts.isMethodSignature(declaration)
 	) {
 		return declaration.typeParameters == null
 			? undefined
 			: Array.from(declaration.typeParameters)
-					.map(td => options.checker.getTypeAtLocation(td))
-					.map(t => toSimpleTypeInternalCaching(t, options) as SimpleTypeGenericParameter);
+			       .map(td => options.checker.getTypeAtLocation(td))
+			       .map(t => toSimpleTypeInternalCaching(t, options) as SimpleTypeGenericParameter);
 	}
 
 	return undefined;

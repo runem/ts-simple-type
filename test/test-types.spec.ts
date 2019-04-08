@@ -1,11 +1,11 @@
 import test from "ava";
-import "./compile";
-import { compile } from "./compile";
 import { resolve } from "path";
-import ts, { TypeChecker, Type, VariableDeclaration, SyntaxKind, Node } from "typescript";
+import ts, { Node, SyntaxKind, Type, TypeChecker, VariableDeclaration } from "typescript";
 import { isAssignableToType } from "../src/is-assignable-to-type";
-import { toSimpleType } from "../src/to-simple-type";
 import { simpleTypeToString } from "../src/simple-type-to-string";
+import { toSimpleType } from "../src/to-simple-type";
+import { compile } from "./compile";
+import "./compile";
 
 // Example usage: "LINE=2,5 npm test"
 const arg = process.argv.slice(2)[0];
@@ -19,10 +19,10 @@ const RELEVANT_LINES = (() => {
 
 interface VisitContext {
 	checker: TypeChecker;
-	foundTest(line: number, typeA: Type, typeB: Type, node: Node): void;
+	foundTest (line: number, typeA: Type, typeB: Type, node: Node): void;
 }
 
-function visit(node: ts.Node, ctx: VisitContext) {
+function visit (node: ts.Node, ctx: VisitContext) {
 	const { checker } = ctx;
 
 	if (ts.isVariableDeclaration(node) && node.initializer != null) {
@@ -72,7 +72,7 @@ visit(sourceFile, {
 	}
 });
 
-function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }: { checker: TypeChecker; node: VariableDeclaration }) {
+function executeToStringTest (line: number, typeA: Type, typeB: Type, { checker }: { checker: TypeChecker; node: VariableDeclaration }) {
 	const typeAStr = checker.typeToString(typeA);
 
 	test(`${line + 1}: simpleTypeToString('${typeAStr}')`, t => {
@@ -80,6 +80,8 @@ function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }
 		const simpleTypeAStr = simpleTypeToString(simpleTypeA);
 
 		if (simpleTypeAStr !== typeAStr) {
+			t.log(simpleTypeA);
+			//console.dir(simpleTypeA, {depth: 10});
 			return t.fail(`toString should give ${typeAStr}. Not ${simpleTypeAStr}`);
 		}
 
@@ -94,7 +96,8 @@ function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }
 		const simpleTypeBStr = simpleTypeToString(simpleTypeB);
 
 		if (simpleTypeBStr !== typeBStr) {
-			console.dir(simpleTypeB, { depth: 10 });
+			t.log(simpleTypeB);
+			//console.dir(simpleTypeB, {depth: 10});
 			return t.fail(`toString should give ${typeBStr}. Not ${simpleTypeBStr}`);
 		}
 
@@ -102,25 +105,23 @@ function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }
 	});
 }
 
-function executeTypeCheckerTest(line: number, typeA: Type, typeB: Type, { checker, shouldBeAssignable }: { checker: TypeChecker; node: VariableDeclaration; shouldBeAssignable: boolean }) {
+function executeTypeCheckerTest (line: number, typeA: Type, typeB: Type, { checker, shouldBeAssignable }: { checker: TypeChecker; node: VariableDeclaration; shouldBeAssignable: boolean }) {
 	const typeAStr = checker.typeToString(typeA);
 	const typeBStr = checker.typeToString(typeB);
 
 	test(`${line + 1}: '${typeAStr}' = '${typeBStr}'`, t => {
-		try {
-			const isAssignable = isAssignableToType(typeA, typeB, checker);
+		const isAssignable = isAssignableToType(typeA, typeB, checker);
 
-			if (shouldBeAssignable !== isAssignable) {
-				const simpleTypeA = toSimpleType(typeA, checker);
-				const simpleTypeB = toSimpleType(typeB, checker);
-				return t.fail(
-					`${isAssignable ? "Can" : "Can't"} assign '${typeBStr}' (${simpleTypeB.kind}) to '${typeAStr}' (${simpleTypeA.kind}) but ${
+		if (shouldBeAssignable !== isAssignable) {
+			const simpleTypeA = toSimpleType(typeA, checker);
+			const simpleTypeB = toSimpleType(typeB, checker);
+			console.dir(simpleTypeA, {depth: 10});
+			console.dir(simpleTypeB, {depth: 10});
+			return t.fail(
+				`${isAssignable ? "Can" : "Can't"} assign '${typeBStr}' (${simpleTypeB.kind}) to '${typeAStr}' (${simpleTypeA.kind}) but ${
 					shouldBeAssignable ? "it should be allowed!" : "it shouldn't be allowed!"
 					}`
-				);
-			}
-		} catch (e) {
-			return t.fail(e.message);
+			);
 		}
 
 		t.pass();

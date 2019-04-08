@@ -167,6 +167,31 @@ type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 		return true;
 	};
 }
+{ const _: <T>(value?: T | PromiseLike<T>) => void = {} as () => void; }
+{ const _: <T>(value: T | PromiseLike<T>) => void = {} as (value: string) => void; }
+{ const _: (value: number) => void = {} as (value: string) => void; }
+{ const _: (value: number) => number = {} as (value: number) => string; }
+{ const _: (value: number) => void = {} as (value: number) => any; }
+{ const _: () => void = {} as () => any; }
+{ const _: (a: string, b: string, c: string) => void = {} as () => any; }
+{ const _: (value: string) => void = {} as (value?: string) => void; }
+{ const _: (value?: string) => void = {} as (value?: string) => void; }
+{ const _: (value?: string) => void = {} as (value: string) => void; }
+{ const _: (value?: string) => void = {} as (value?: number) => void; }
+{ const _: (value: string) => void = {} as () => void; }
+{ const _: (a: string, b: string) => void = {} as () => number; }
+{ const _: (a: string, b: string) => undefined = {} as () => number; }
+{ const _: (a: string, b: string) => string = {} as () => number; }
+{ const _: (a: string, b: string) => string = {} as () => void; }
+
+// PromiseLike
+{ const _: PromiseLike<string> = {} as string; }
+{ const _: PromiseLike<string> = {} as Promise<string>; }
+
+// Void
+{ const _: void = {} as string; }
+{ const _: void = {} as number; }
+{ const _: void = undefined; }
 
 type Hello = number;
 

@@ -6,7 +6,7 @@ import { and, or } from "./util";
  * @param typeA Type A
  * @param typeB Type B
  */
-export function isAssignableToSimpleType (typeA: SimpleType, typeB: SimpleType): boolean {
+export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): boolean {
 	return isAssignabletoSimpleTypeInternal(typeA, typeB, {
 		inCircularA: false,
 		inCircularB: false,
@@ -24,7 +24,7 @@ interface IsAssignableToSimpleTypeOptions {
 	genericParameterMapB: Map<string, SimpleType>;
 }
 
-function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
+function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
 	/*
 	 options = {...options};
 	 (options as any).depth = ((options as any).depth || 0) + 1;
@@ -109,7 +109,7 @@ function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 
 		// Void
 		case SimpleTypeKind.VOID:
-			return typeB.kind === SimpleTypeKind.VOID;
+			return typeB.kind === SimpleTypeKind.VOID || typeB.kind === SimpleTypeKind.UNDEFINED;
 
 		// Alias
 		case SimpleTypeKind.ALIAS:
@@ -140,26 +140,42 @@ function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 		case SimpleTypeKind.FUNCTION:
 		case SimpleTypeKind.METHOD:
 			if (typeB.kind !== SimpleTypeKind.FUNCTION && typeB.kind !== SimpleTypeKind.METHOD) return false;
-			if (!isAssignabletoSimpleTypeInternal(typeA.returnType, typeB.returnType, options)) return false;
 
+			// Any returntype is assignable to void
+			if (typeA.returnType.kind !== SimpleTypeKind.VOID && !isAssignabletoSimpleTypeInternal(typeA.returnType, typeB.returnType, options)) return false;
+
+			// A function with 0 args can be assigned to any other function
+			if (typeB.argTypes.length === 0) {
+				return true;
+			}
+
+			// Compare the types of each arg
 			for (let i = 0; i < Math.max(typeA.argTypes.length, typeB.argTypes.length); i++) {
 				const argA = typeA.argTypes[i];
 				const argB = typeB.argTypes[i];
 
-				if (argB == null && argA != null && !argA.optional) {
-					return false;
+				// If argA is not present, check if argB is optional or not present as well
+				if (argA == null) {
+					return argB == null || argB.optional;
 				}
 
-				if (argB != null && argA == null) {
-					return false;
+				// If argB is not present, check if argA is optional
+				if (argB == null) {
+					return argA.optional;
 				}
 
-				if (!isAssignabletoSimpleTypeInternal(argA.type, argB.type, options)) {
-					if (argA.spread && argA.type.kind === SimpleTypeKind.ARRAY && (!argB.spread && argB.type.kind !== SimpleTypeKind.ARRAY)) {
-						if (!isAssignabletoSimpleTypeInternal(argA.type.type, argB.type, options)) {
-							return false;
-						}
+				// Check if we are comparing a spread against a non-spread
+				if (argA.spread && argA.type.kind === SimpleTypeKind.ARRAY && (!argB.spread && argB.type.kind !== SimpleTypeKind.ARRAY)) {
+					if (!isAssignabletoSimpleTypeInternal(argA.type.type, argB.type, options)) {
+						return false;
 					}
+
+					continue;
+				}
+
+				// If the types are not assignable return false right away
+				if (!isAssignabletoSimpleTypeInternal(argB.type, argA.type, options)) {
+					return false;
 				}
 			}
 
@@ -240,7 +256,7 @@ function isAssignabletoSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 	}
 }
 
-function extendTypeParameterMap (genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
+function extendTypeParameterMap(genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
 	if ("typeParameters" in genericType.target) {
 		const parameterEntries = (genericType.target.typeParameters || []).map(
 			(parameter, i) => [parameter.name, genericType.typeArguments[i] || parameter.default || { kind: SimpleTypeKind.ANY }] as [string, SimpleType]

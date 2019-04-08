@@ -41,7 +41,9 @@ export function simpleTypeToString(type: SimpleType): string {
 		case SimpleTypeKind.METHOD:
 			if (type.kind === SimpleTypeKind.FUNCTION && type.name != null) return type.name;
 			const argText = functionArgTypesToString(type.argTypes);
-			return `(${argText})${type.returnType != null ? ` => ${simpleTypeToString(type.returnType)}` : ""}`;
+			return `${type.typeParameters != null ? `<${type.typeParameters.map(tp => tp.name).join(",")}>` : ""}(${argText})${
+				type.returnType != null ? ` => ${simpleTypeToString(type.returnType)}` : ""
+			}`;
 		case SimpleTypeKind.ARRAY:
 			const hasMultipleTypes = [SimpleTypeKind.UNION, SimpleTypeKind.INTERSECTION].includes(type.type.kind);
 			let memberType = simpleTypeToString(type.type);
@@ -68,8 +70,7 @@ export function simpleTypeToString(type: SimpleType): string {
 					// this check needs to change in the future
 					if (member.type.kind === SimpleTypeKind.FUNCTION || member.type.kind === SimpleTypeKind.METHOD) {
 						const result = simpleTypeToString(member.type);
-						const genericParameters = member.type.typeParameters != null ? `<${member.type.typeParameters.map(simpleTypeToString).join(", ")}>` : "";
-						return `${member.name}${result.replace(" => ", ": ").replace("(", `${genericParameters}(`)}`;
+						return `${member.name}${result.replace(" => ", ": ")}`;
 					}
 
 					return `${member.name}: ${simpleTypeToString(member.type)}`;
