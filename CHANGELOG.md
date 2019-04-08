@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.28"></a>
+## [0.2.28](https://github.com/runem/ts-simple-type/compare/v0.2.27...v0.2.28) (2019-04-08)
+
+
+### Bug Fixes
+
+* ArrayLike and PromiseLike ([6d51122](https://github.com/runem/ts-simple-type/commit/6d51122))
+* Fix various function checks and add more function related test cases ([cd8c1c5](https://github.com/runem/ts-simple-type/commit/cd8c1c5))
+
+
+
 <a name="0.2.27"></a>
 ## [0.2.27](https://github.com/runem/ts-simple-type/compare/v0.2.26...v0.2.27) (2019-03-07)
 
