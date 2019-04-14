@@ -16,10 +16,10 @@ export interface AssignableToSimpleTypeKindOptions {
  * @param checker TypeCHecker if type is a typescript type
  * @param options Options
  */
-export function isAssignableToSimpleTypeKind (type: SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], options?: AssignableToSimpleTypeKindOptions): boolean;
-export function isAssignableToSimpleTypeKind (type: Type, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: AssignableToSimpleTypeKindOptions): boolean;
-export function isAssignableToSimpleTypeKind (type: Type | SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: AssignableToSimpleTypeKindOptions): boolean;
-export function isAssignableToSimpleTypeKind (
+export function isAssignableToSimpleTypeKind(type: SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], options?: AssignableToSimpleTypeKindOptions): boolean;
+export function isAssignableToSimpleTypeKind(type: Type, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: AssignableToSimpleTypeKindOptions): boolean;
+export function isAssignableToSimpleTypeKind(type: Type | SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: AssignableToSimpleTypeKindOptions): boolean;
+export function isAssignableToSimpleTypeKind(
 	type: Type | SimpleType,
 	kind: SimpleTypeKind | SimpleTypeKind[],
 	optionsOrChecker?: TypeChecker | AssignableToSimpleTypeKindOptions,
@@ -28,7 +28,7 @@ export function isAssignableToSimpleTypeKind (
 	if (!isSimpleType(type)) {
 		return isAssignableToSimpleTypeKind(toSimpleType(type, optionsOrChecker as TypeChecker), kind, options);
 	} else {
-		options = optionsOrChecker as AssignableToSimpleTypeKindOptions || {};
+		options = (optionsOrChecker as AssignableToSimpleTypeKindOptions) || {};
 	}
 
 	// Make sure that an object without members are treated as ANY
