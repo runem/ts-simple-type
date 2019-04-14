@@ -2,13 +2,19 @@ import { combineIntersectionSimpleTypes } from "./combine-intersection-simple-ty
 import { isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleTypeGenericArguments, SimpleTypeKind } from "./simple-type";
 import { and, or } from "./util";
 
+export interface SimpleTypeComparisonConfig {
+	strictNullChecks?: boolean;
+}
+
 /**
  * Returns if typeB is assignable to typeA.
  * @param typeA Type A
  * @param typeB Type B
+ * @param config
  */
-export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): boolean {
+export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonConfig = {}): boolean {
 	return isAssignabletoSimpleTypeInternal(typeA, typeB, {
+		config,
 		inCircularA: false,
 		inCircularB: false,
 		insideType: new Set(),
@@ -18,6 +24,7 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): 
 }
 
 interface IsAssignableToSimpleTypeOptions {
+	config: SimpleTypeComparisonConfig;
 	inCircularA: boolean;
 	inCircularB: boolean;
 	insideType: Set<SimpleType>;
@@ -41,10 +48,12 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		return true;
 	}
 
+	// Circular types
 	if (options.inCircularA && options.inCircularB) {
 		return true;
 	}
 
+	// Any and unknown
 	if (typeA.kind === SimpleTypeKind.UNKNOWN || typeA.kind === SimpleTypeKind.ANY || typeB.kind === SimpleTypeKind.ANY) {
 		return true;
 	}
@@ -82,6 +91,13 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.GENERIC_PARAMETER:
 			const realType = options.genericParameterMapB.get(typeB.name);
 			return isAssignabletoSimpleTypeInternal(typeA, realType || typeB.default || { kind: SimpleTypeKind.ANY }, options);
+
+		case SimpleTypeKind.UNDEFINED:
+		case SimpleTypeKind.NULL:
+			// Strict null check, "undefined" and "null" are in the domain of every type
+			if (options.config.strictNullChecks === false) {
+				return true;
+			}
 	}
 
 	switch (typeA.kind) {
@@ -108,12 +124,14 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.BOOLEAN:
 		case SimpleTypeKind.NUMBER:
 		case SimpleTypeKind.BIG_INT:
-		case SimpleTypeKind.UNDEFINED:
-		case SimpleTypeKind.NULL:
 			if (isSimpleTypeLiteral(typeB)) {
 				return PRIMITIVE_TYPE_TO_LITERAL_MAP[typeA.kind] === typeB.kind;
 			}
 
+			return typeA.kind === typeB.kind;
+
+		case SimpleTypeKind.UNDEFINED:
+		case SimpleTypeKind.NULL:
 			return typeA.kind === typeB.kind;
 
 		// Void
