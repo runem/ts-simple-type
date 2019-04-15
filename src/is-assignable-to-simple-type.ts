@@ -1,3 +1,4 @@
+import { combineSimpleTypes } from "./combine-simple-types";
 import { isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleTypeGenericArguments, SimpleTypeKind } from "./simple-type";
 import { and, or } from "./util";
 
@@ -25,11 +26,11 @@ interface IsAssignableToSimpleTypeOptions {
 }
 
 function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
-	/*
-	 options = {...options};
-	 (options as any).depth = ((options as any).depth || 0) + 1;
-	 console.log( "###", " ".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###" );
-	 */
+	/**
+	options = { ...options };
+	(options as any).depth = ((options as any).depth || 0) + 1;
+	console.log( "###", "\t".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###" );
+	/**/
 
 	if (typeA === typeB) {
 		return true;
@@ -49,6 +50,8 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	}
 
 	switch (typeB.kind) {
+		case SimpleTypeKind.NEVER:
+			return true;
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
 			return isAssignabletoSimpleTypeInternal(typeA, typeB.ref, {
 				...options,
@@ -62,7 +65,9 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.UNION:
 			return and(typeB.types, childTypeB => isAssignabletoSimpleTypeInternal(typeA, childTypeB, options));
 		case SimpleTypeKind.INTERSECTION:
-			return and(typeB.types, childTypeB => isAssignabletoSimpleTypeInternal(typeA, childTypeB, options));
+			const combinedIntersectionType = combineSimpleTypes(typeB.types);
+			return isAssignabletoSimpleTypeInternal(typeA, combinedIntersectionType, options);
+
 		case SimpleTypeKind.ALIAS:
 			return isAssignabletoSimpleTypeInternal(typeA, typeB.target, options);
 		case SimpleTypeKind.GENERIC_ARGUMENTS:
@@ -110,6 +115,10 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		// Void
 		case SimpleTypeKind.VOID:
 			return typeB.kind === SimpleTypeKind.VOID || typeB.kind === SimpleTypeKind.UNDEFINED;
+
+		// Never
+		case SimpleTypeKind.NEVER:
+			return false;
 
 		// Alias
 		case SimpleTypeKind.ALIAS:
@@ -188,7 +197,8 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 		// Intersections
 		case SimpleTypeKind.INTERSECTION:
-			return and(typeA.types, childTypeA => isAssignabletoSimpleTypeInternal(childTypeA, typeB, options));
+			const combinedIntersectionType = combineSimpleTypes(typeA.types);
+			return isAssignabletoSimpleTypeInternal(combinedIntersectionType, typeB, options);
 
 		// Interfaces
 		case SimpleTypeKind.INTERFACE:
@@ -229,7 +239,10 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 							// Do not allow new props in subtype: contravariance
 							// Strict type checking
 							const memberA = membersA.find(memberA => memberA.name === memberB.name);
-							if (memberA == null) return false;
+							if (memberA == null) {
+								// If we find a member in typeB which isn't in typeA, allow it if both typeA and typeB are object
+								return typeA.kind === SimpleTypeKind.OBJECT && typeB.kind === SimpleTypeKind.OBJECT;
+							}
 							return isAssignabletoSimpleTypeInternal(memberA.type, memberB.type, newOptions);
 						})
 					);

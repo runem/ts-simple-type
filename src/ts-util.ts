@@ -101,6 +101,10 @@ export function isVoid(type: Type) {
 	return hasFlag(type, tsModule.ts.TypeFlags.VoidLike);
 }
 
+export function isNever(type: Type): boolean {
+	return hasFlag(type, tsModule.ts.TypeFlags.Never);
+}
+
 export function isObjectTypeReference(type: ObjectType): type is TypeReference {
 	return (type.objectFlags & tsModule.ts.ObjectFlags.Reference) !== 0;
 }
@@ -132,7 +136,7 @@ export function isPromise(type: Type): type is TypeReference {
 	if (!isObject(type)) return false;
 	const symbol = type.getSymbol();
 	if (symbol == null) return false;
-	return getTypeArguments(type).length === 1 && ["PromiseLike", "Promise"].includes(symbol.getName())
+	return getTypeArguments(type).length === 1 && ["PromiseLike", "Promise"].includes(symbol.getName());
 }
 
 export function isDate(type: Type): type is ObjectType {

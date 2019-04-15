@@ -37,6 +37,8 @@ export function simpleTypeToString(type: SimpleType): string {
 			return "unknown";
 		case SimpleTypeKind.VOID:
 			return "void";
+		case SimpleTypeKind.NEVER:
+			return "never";
 		case SimpleTypeKind.FUNCTION:
 		case SimpleTypeKind.METHOD:
 			if (type.kind === SimpleTypeKind.FUNCTION && type.name != null) return type.name;

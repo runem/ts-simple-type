@@ -115,8 +115,8 @@ function executeTypeCheckerTest(line: number, typeA: Type, typeB: Type, { checke
 		if (shouldBeAssignable !== isAssignable) {
 			const simpleTypeA = toSimpleType(typeA, checker);
 			const simpleTypeB = toSimpleType(typeB, checker);
-			//console.dir(simpleTypeA, { depth: 10 });
-			//console.dir(simpleTypeB, { depth: 10 });
+			console.dir(simpleTypeA, { depth: 10 });
+			console.dir(simpleTypeB, { depth: 10 });
 			return t.fail(
 				`${isAssignable ? "Can" : "Can't"} assign '${typeBStr}' (${simpleTypeB.kind}) to '${typeAStr}' (${simpleTypeA.kind}) but ${
 					shouldBeAssignable ? "it should be allowed!" : "it shouldn't be allowed!"
