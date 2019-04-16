@@ -1,4 +1,4 @@
-import { combineSimpleTypes } from "./combine-simple-types";
+import { combineIntersectionSimpleTypes } from "./combine-intersection-simple-types";
 import { isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleTypeGenericArguments, SimpleTypeKind } from "./simple-type";
 import { and, or } from "./util";
 
@@ -52,6 +52,7 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	switch (typeB.kind) {
 		case SimpleTypeKind.NEVER:
 			return true;
+
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
 			return isAssignabletoSimpleTypeInternal(typeA, typeB.ref, {
 				...options,
@@ -65,7 +66,10 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.UNION:
 			return and(typeB.types, childTypeB => isAssignabletoSimpleTypeInternal(typeA, childTypeB, options));
 		case SimpleTypeKind.INTERSECTION:
-			const combinedIntersectionType = combineSimpleTypes(typeB.types);
+			const combinedIntersectionType = combineIntersectionSimpleTypes(typeB.types);
+			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
+				return false;
+			}
 			return isAssignabletoSimpleTypeInternal(typeA, combinedIntersectionType, options);
 
 		case SimpleTypeKind.ALIAS:
@@ -138,9 +142,9 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		// Arrays
 		case SimpleTypeKind.ARRAY:
 			if (typeB.kind === SimpleTypeKind.ARRAY) {
-				if (typeA) {
-					return isAssignabletoSimpleTypeInternal(typeA.type, typeB.type, options);
-				}
+				return isAssignabletoSimpleTypeInternal(typeA.type, typeB.type, options);
+			} else if (typeB.kind === SimpleTypeKind.TUPLE) {
+				return and(typeB.members, memberB => isAssignabletoSimpleTypeInternal(typeA.type, memberB.type, options));
 			}
 
 			return false;
@@ -197,7 +201,12 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 		// Intersections
 		case SimpleTypeKind.INTERSECTION:
-			const combinedIntersectionType = combineSimpleTypes(typeA.types);
+			const combinedIntersectionType = combineIntersectionSimpleTypes(typeA.types);
+
+			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
+				return false;
+			}
+
 			return isAssignabletoSimpleTypeInternal(combinedIntersectionType, typeB, options);
 
 		// Interfaces

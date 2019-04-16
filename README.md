@@ -13,7 +13,7 @@ To fill in the gap while this issue is being discussed this library aims to prov
 
 Furthermore this library can help you construct types (called `SimpleType`) which can be serialized and easy analyzed. 
 
-This library has more than 700 tests comparing results to actual Typescript diagnostics (see [test-types.ts](https://github.com/runem/ts-simple-type/blob/master/test-types/test-types.ts)).
+This library has more than 850 tests comparing results to actual Typescript diagnostics (see [test-types.ts](https://github.com/runem/ts-simple-type/blob/master/test-types/test-types.ts)).
 
 ## Installation
 
