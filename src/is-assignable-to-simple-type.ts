@@ -3,8 +3,15 @@ import { isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleT
 import { and, or } from "./util";
 
 export interface SimpleTypeComparisonConfig {
+	strict?: boolean;
 	strictNullChecks?: boolean;
+	strictFunctionTypes?: boolean;
+	noStrictGenericChecks?: boolean;
 }
+
+const DEFAULT_CONFIG: SimpleTypeComparisonConfig = {
+	strict: true
+};
 
 /**
  * Returns if typeB is assignable to typeA.
@@ -12,7 +19,7 @@ export interface SimpleTypeComparisonConfig {
  * @param typeB Type B
  * @param config
  */
-export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonConfig = {}): boolean {
+export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonConfig = DEFAULT_CONFIG): boolean {
 	return isAssignabletoSimpleTypeInternal(typeA, typeB, {
 		config,
 		inCircularA: false,
@@ -34,10 +41,10 @@ interface IsAssignableToSimpleTypeOptions {
 
 function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
 	/**
-	options = { ...options };
-	(options as any).depth = ((options as any).depth || 0) + 1;
-	console.log( "###", "\t".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###" );
-	/**/
+	 options = { ...options };
+	 (options as any).depth = ((options as any).depth || 0) + 1;
+	 console.log( "###", "\t".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###" );
+	 /**/
 
 	if (typeA === typeB) {
 		return true;
@@ -94,8 +101,8 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 		case SimpleTypeKind.UNDEFINED:
 		case SimpleTypeKind.NULL:
-			// Strict null check, "undefined" and "null" are in the domain of every type
-			if (options.config.strictNullChecks === false) {
+			// When strict null checks are turned off, "undefined" and "null" are in the domain of every type
+			if (!options.config.strictNullChecks && !options.config.strict) {
 				return true;
 			}
 	}
