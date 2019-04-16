@@ -105,11 +105,11 @@ class SampleClassOne implements SampleInterface {
 	readonly required = 1;
 }
 
-{ const _: SampleClassOne = new SampleClassOne() }
-{ const _: SampleInterface = new SampleClassOne() }
-{ const _: SampleClassOne = {} as SampleInterface }
-{ const _: SampleClassOne = {} as SampleInterface }
-{ const _: SampleInterface = new SampleClassOne() }
+{ const _: SampleClassOne = new SampleClassOne(); }
+{ const _: SampleInterface = new SampleClassOne(); }
+{ const _: SampleClassOne = {} as SampleInterface; }
+{ const _: SampleClassOne = {} as SampleInterface; }
+{ const _: SampleInterface = new SampleClassOne(); }
 
 // Generic functions
 type foo<T> = (t: T) => T | undefined;
@@ -133,11 +133,11 @@ type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 { const _: ReadonlyArray<string> = [] as string[]; }
 
 // Promise
-{ const _: Promise<number> = Promise.resolve(123) }
-{ const _: Promise<string> = Promise.resolve(123) }
-{ const _: Promise<string> = Promise.resolve("hello") }
-{ const _: Promise<void> = Promise.resolve("hello") }
-{ const _: Promise<{}> = Promise.resolve("hello") }
+{ const _: Promise<number> = Promise.resolve(123); }
+{ const _: Promise<string> = Promise.resolve(123); }
+{ const _: Promise<string> = Promise.resolve("hello"); }
+{ const _: Promise<void> = Promise.resolve("hello"); }
+{ const _: Promise<{}> = Promise.resolve("hello"); }
 
 // Functions
 { const _: Hello = 123; }
@@ -233,14 +233,14 @@ interface MyInterfaceWithAllOptional {
 { const _: MyInterface = { foo: "hello" } as MyInterface; }
 { const _: MyInterface = { foo: "hello" }; }
 { const _: MyInterface = {}; }
-{ const _: MyInterface = { foo: "hello", bar: "hello" }; }
+{ const _: MyInterface = {} as { foo: "hello", bar: "hello" }; }
 { const _: MyInterfaceWithOptional = { foo: "hello" }; }
 { const _: MyInterfaceWithOptional = {}; }
 { const _: MyInterfaceWithAllOptional = {}; }
-{ const _: MyInterfaceWithAllOptional = { bar: "hello" }; }
+{ const _: MyInterfaceWithAllOptional = {} as { bar: "hello" }; }
 { const _: MyInterfaceWithAllOptional = { foo: "hello" }; }
 { const _: MyInterfaceWithAllOptional = { foo: "hello", bar: 123 }; }
-{ const _: { foo: string } = { foo: "hello", bar: 123 }; }
+{ const _: { foo: string } = {} as { foo: "hello", bar: 123 }; }
 { const _: MyInterface | undefined = {} as MyInterface; }
 { myTestObj.testType = {} as MyTestInterface; }
 
@@ -417,7 +417,70 @@ type MyEnumAlias = MyEnum;
 { const _: undefined = undefined; }
 { const _: undefined = { a: "A", b: "B", c: "C" }; }
 
-// Union
+// Intersection types
+{ const _: string & number = "hello"; }
+
+// Type alias intersection
+class IntersectionClass {
+	bar = true;
+
+	hello () {
+	}
+}
+
+interface IntersectionTypeA {
+	bar: boolean;
+}
+
+type IntersectionType = IntersectionTypeA & { foo: string };
+
+{ const _: IntersectionType = {} as IntersectionType; }
+{ const _: IntersectionType = { foo: "", bar: true }; }
+{ const _: { foo: string }[] & { bar: number }[] = {} as ["hello"]; }
+{ const _: { foo: string }[] & { bar: number }[] = {} as { foo: string, bar: number }[]; }
+{ const _: { foo: string }[] & { bar: number }[] = {} as [{ foo: string, bar: number }]; }
+{ const _: { foo: string }[] & { bar: number }[] = {} as [{ foo: string, bar: number }, number]; }
+{ const _: { foo: string }[] & { bar: number }[] = {} as [{ foo: string }] & { bar: number }; }
+//{ const _: { foo: string }[] & { bar: number }[] = {} as [{ foo: string }] & { bar: number }[]; }
+//{ const _: { foo: string }[] & ({ bar: number }[] | { bar: boolean }) = {} as [{ foo: string }] & { bar: number }[]; }
+//{ const _: { foo: string }[] & { bar: number }[] | { bar: boolean } = {} as [{ foo: string }] & { bar: number }[]; }
+//{ const _: [{ foo: string }, number] & [{ bar: boolean }, number] = {} as [{ foo: "" }, number] & [{ bar: true }, 123]; }
+//{ const _: { foo: string }[] & { bar: number }[] | { bar: boolean } = {} as [{ foo: string }] & { bar: boolean }[]; }
+//{ const _: { foo: string }[] & { bar: number }[] = {} as [{ foo: string }] & { bar: boolean }[]; }
+{ const _: [string, number] & [string, number] = {} as { foo: "", bar: true }; }
+{ const _: [string, number] & [string] = {} as ["hello", 123]; }
+{ const _: [string, number] & [string] = {} as ["hello"]; }
+{ const _: [string, number] & [string, number] = {} as ["hello", 123]; }
+//{ const _: [string?] & [string] = {} as ["hello"]; }
+//{ const _: [string?] & [string] = {} as []; }
+{ const _: {} = {} as IntersectionType & IntersectionClass; }
+{ const _: IntersectionType & IntersectionClass = {} as { foo: string, bar: boolean } & { hello (): void }; }
+{ const _: IntersectionType & IntersectionClass = {} as { foo: string, bar: boolean }; }
+{ const _: [{ foo: string }, number] & [{ bar: boolean }, number] = {} as [{ foo: "", bar: true }, 123]; }
+{ const _: [{ foo: string }, number] & [{ bar: boolean }, number] = {} as [{ foo: "", bar: "" }, 123]; }
+{ const _: [string, number] & [string, number] = {} as [string, number]; }
+{ const _: [string, number] & [string, number] = {} as [string, string]; }
+
+{ const _: IntersectionTypeA = {} as IntersectionTypeA; }
+{ const _: IntersectionType = { bar: true }; }
+{ const _: IntersectionType = { foo: "" }; }
+{ const _: {} & { foo: string } = {} as { foo: string, hello: boolean }; }
+{ const _: {} & { foo: string } = {} as { foo: string, hello: boolean }; }
+{ const _: IntersectionClass & { foo: string } = {} as { bar: boolean, foo: string }; }
+{ const _: { bar: string } & { foo: boolean } = {} as { bar: string, foo: boolean }; }
+{ const _: { bar: string } & { foo: string } = {} as { foo: string, bar: boolean }; }
+{ const _: boolean & string = "hello"; }
+{ const _: boolean & boolean = true; }
+{ const _: 1 & 2 = 1; }
+{ const _: { foo: number } & { foo: boolean } = {} as { foo: number }; }
+{ const _: {} & { foo: boolean } = {} as { hello: boolean }; }
+{ const _: "foo" & "bar" = "bar"; }
+{ const _: {} & "foo" & "bar" = "bar"; }
+{ const _: "foo" & "bar" = {} as "foo" & "bar"; }
+{ const _: "foo" & "foo" = "foo"; }
+
+
+// Union types
 { const _: string | number = "hello"; }
 { const _: string | number = 123; }
 { const _: string | number = true; }
@@ -430,7 +493,7 @@ type MyEnumAlias = MyEnum;
 { const _: string = 123 as (string | number); }
 { const _: "red" | "green" = "blue" as string; }
 
-// Typed union
+// Type alias union
 type ButtonColor = "primary" | "accent" | "warn";
 { const _: ButtonColor = "primary"; }
 { const _: ButtonColor = "foo"; }
@@ -466,6 +529,13 @@ type ButtonColor = "primary" | "accent" | "warn";
 { const _: [string] = {} as [1, "hello", 2]; }
 { const _: [number, number | string, number] = [1, "hello", 2] as [number, number | string, number]; }
 { const _: [number, number | string, [string, number]] = [1, 2, ["foo", 2]] as [number, number | string, [string, number]]; }
+{ const _: { foo: string, bar: number }[] = {} as [{ foo: string, bar: number }]; }
+{ const _: { foo: string, bar: number }[] = {} as [{ foo: string, bar: number }, { foo: string, bar: number }]; }
+{ const _: { foo: string, bar: number }[] = {} as [{ foo: string, bar: number }, { foo: string, bar: string }]; }
+{ const _: number[] = {} as [number, number]; }
+{ const _: number[] = {} as [number, number, number, number, number]; }
+{ const _: number[] = {} as []; }
+{ const _: [{ foo: string, bar: number }] = {} as { foo: string, bar: number }[]; }
 
 
 // Date
@@ -473,17 +543,17 @@ type ButtonColor = "primary" | "accent" | "warn";
 { const _: Date = {} as Date; }
 { const _: Date = new Date(); }
 { const _: number = new Date(); }
-{ const _: Date = "hello" }
-{ const _: Date = 1239853 }
+{ const _: Date = "hello"; }
+{ const _: Date = 1239853; }
 
 // Object
-interface EmptyInterface { }
+interface EmptyInterface {}
 
-{ const _: {} = {foo: true}; }
+{ const _: {} = { foo: true }; }
 { const _: {} = null; }
 { const _: {} = undefined; }
-{ const _: EmptyInterface = {foo: true}; }
-{ const _: EmptyInterface = {foo: null}; }
+{ const _: EmptyInterface = { foo: true }; }
+{ const _: EmptyInterface = { foo: null }; }
 { const _: EmptyInterface = null; }
 { const _: EmptyInterface = {} as string | null; }
 { const _: EmptyInterface = undefined; }
@@ -495,5 +565,17 @@ interface EmptyInterface { }
 { const _: {} = {}; }
 { const _: {} = new MyClass(); }
 { const _: {} = MyEnum.BLUE; }
-{ const _: {hello: string} = {} as {foo: "bar"}; }
-{ const _: {hello: string} = {}; }
+{ const _: { hello: string } = {} as { foo: "bar" }; }
+{ const _: { hello: string } = {}; }
+{ const _: { foo: string, hello: boolean } = {} as IntersectionTypeA; }
+{ const _: { foo: string } = {} as { foo: string, hello: boolean }; }
+{ const _: IntersectionTypeA = {} as { foo: string, hello: boolean }; }
+
+// Never
+{ const _: never = {} as never; }
+{ const _: string = {} as never; }
+{ const _: never = {} as string; }
+{ const _: {hello: string} = {} as never; }
+{ const _: {hello: string} = {} as string & number; }
+{ const _: never = {} as string & number; }
+{ const _: "foo" & "bar" = {} as never; }

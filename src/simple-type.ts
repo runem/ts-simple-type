@@ -9,6 +9,7 @@ export enum SimpleTypeKind {
 	BIG_INT = "BIG_INT",
 	NULL = "NULL",
 	UNDEFINED = "UNDEFINED",
+	NEVER = "NEVER",
 	ANY = "ANY",
 	UNKNOWN = "UNKNOWN",
 	VOID = "VOID",
@@ -204,6 +205,10 @@ export interface SimpleTypeNull extends SimpleTypeBase {
 	kind: SimpleTypeKind.NULL;
 }
 
+export interface SimpleTypeNever extends SimpleTypeBase {
+	kind: SimpleTypeKind.NEVER;
+}
+
 export interface SimpleTypeUndefined extends SimpleTypeBase {
 	kind: SimpleTypeKind.UNDEFINED;
 }
@@ -247,6 +252,7 @@ export type SimpleType =
 	| SimpleTypeBigInt
 	| SimpleTypeNull
 	| SimpleTypeUndefined
+	| SimpleTypeNever
 	| SimpleTypeAny
 	| SimpleTypeMethod
 	| SimpleTypeVoid

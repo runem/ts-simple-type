@@ -1,7 +1,7 @@
 import { Declaration, Node, Symbol, Type, TypeChecker } from "typescript";
 import { isImplicitGenericType, isSimpleTypeLiteral, PRIMITIVE_TYPE_KINDS, SimpleType, SimpleTypeAlias, SimpleTypeBooleanLiteral, SimpleTypeClassMember, SimpleTypeEnumMember, SimpleTypeFunction, SimpleTypeFunctionArgument, SimpleTypeGenericParameter, SimpleTypeInterface, SimpleTypeKind, SimpleTypeLiteral, SimpleTypeMethod, SimpleTypeNull, SimpleTypeObject, SimpleTypeUndefined } from "./simple-type";
 import { tsModule } from "./ts-module";
-import { getDeclaration, getModifiersFromDeclaration, getTypeArguments, isArray, isBigInt, isBigIntLiteral, isBoolean, isBooleanLiteral, isDate, isEnum, isFunction, isLiteral, isMethod, isNode, isNull, isNumber, isObject, isObjectTypeReference, isPromise, isString, isTuple, isUndefined, isUnknown, isVoid } from "./ts-util";
+import { getDeclaration, getModifiersFromDeclaration, getTypeArguments, isArray, isBigInt, isBigIntLiteral, isBoolean, isBooleanLiteral, isDate, isEnum, isFunction, isLiteral, isMethod, isNever, isNode, isNull, isNumber, isObject, isObjectTypeReference, isPromise, isString, isTuple, isUndefined, isUnknown, isVoid } from "./ts-util";
 
 /**
  * Converts a Typescript type to a "SimpleType"
@@ -173,6 +173,8 @@ function toSimpleTypeInternal (type: Type, options: ToSimpleTypeOptions): Simple
 		return { kind: SimpleTypeKind.UNKNOWN, name };
 	} else if (isVoid(type)) {
 		return { kind: SimpleTypeKind.VOID, name };
+	} else if (isNever(type)) {
+		return { kind: SimpleTypeKind.NEVER, name };
 	}
 
 	// Enum
