@@ -1,14 +1,24 @@
-import { combineIntersectionSimpleTypes } from "./combine-intersection-simple-types";
+import { combineIntersectingSimpleTypes } from "./combine-intersecting-simple-types";
 import { isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleTypeGenericArguments, SimpleTypeKind } from "./simple-type";
+import { SimpleTypeComparisonOptions } from "./simple-type-comparison-options";
 import { and, or } from "./util";
+
+/**
+ * TODO: Remove strict default in a major version change to align with Typescript.
+ */
+const DEFAULT_CONFIG: SimpleTypeComparisonOptions = {
+	strict: true
+};
 
 /**
  * Returns if typeB is assignable to typeA.
  * @param typeA Type A
  * @param typeB Type B
+ * @param config
  */
-export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): boolean {
+export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonOptions = DEFAULT_CONFIG): boolean {
 	return isAssignabletoSimpleTypeInternal(typeA, typeB, {
+		config,
 		inCircularA: false,
 		inCircularB: false,
 		insideType: new Set(),
@@ -18,6 +28,7 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType): 
 }
 
 interface IsAssignableToSimpleTypeOptions {
+	config: SimpleTypeComparisonOptions;
 	inCircularA: boolean;
 	inCircularB: boolean;
 	insideType: Set<SimpleType>;
@@ -27,24 +38,26 @@ interface IsAssignableToSimpleTypeOptions {
 
 function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
 	/**
-	options = { ...options };
-	(options as any).depth = ((options as any).depth || 0) + 1;
-	console.log( "###", "\t".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###" );
-	/**/
+	 options = { ...options };
+	 (options as any).depth = ((options as any).depth || 0) + 1;
+	 console.log( "###", "\t".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###" );
+	 /**/
 
 	if (typeA === typeB) {
 		return true;
 	}
 
 	// We might need a better way of handling refs, but these check are good for now
-	if (options.insideType.has(typeA)) {
+	if (options.insideType.has(typeA) || options.insideType.has(typeB)) {
 		return true;
 	}
 
-	if (options.inCircularA && options.inCircularB) {
+	// Circular types
+	if (options.inCircularA || options.inCircularB) {
 		return true;
 	}
 
+	// Any and unknown
 	if (typeA.kind === SimpleTypeKind.UNKNOWN || typeA.kind === SimpleTypeKind.ANY || typeB.kind === SimpleTypeKind.ANY) {
 		return true;
 	}
@@ -66,7 +79,7 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.UNION:
 			return and(typeB.types, childTypeB => isAssignabletoSimpleTypeInternal(typeA, childTypeB, options));
 		case SimpleTypeKind.INTERSECTION:
-			const combinedIntersectionType = combineIntersectionSimpleTypes(typeB.types);
+			const combinedIntersectionType = combineIntersectingSimpleTypes(typeB.types);
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
 				return false;
 			}
@@ -82,6 +95,14 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.GENERIC_PARAMETER:
 			const realType = options.genericParameterMapB.get(typeB.name);
 			return isAssignabletoSimpleTypeInternal(typeA, realType || typeB.default || { kind: SimpleTypeKind.ANY }, options);
+
+		case SimpleTypeKind.UNDEFINED:
+		case SimpleTypeKind.NULL:
+			// When strict null checks are turned off, "undefined" and "null" are in the domain of every type
+			const strictNullChecks = options.config.strictNullChecks === true || (options.config.strictNullChecks == null && options.config.strict);
+			if (!strictNullChecks) {
+				return true;
+			}
 	}
 
 	switch (typeA.kind) {
@@ -108,12 +129,14 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.BOOLEAN:
 		case SimpleTypeKind.NUMBER:
 		case SimpleTypeKind.BIG_INT:
-		case SimpleTypeKind.UNDEFINED:
-		case SimpleTypeKind.NULL:
 			if (isSimpleTypeLiteral(typeB)) {
 				return PRIMITIVE_TYPE_TO_LITERAL_MAP[typeA.kind] === typeB.kind;
 			}
 
+			return typeA.kind === typeB.kind;
+
+		case SimpleTypeKind.UNDEFINED:
+		case SimpleTypeKind.NULL:
 			return typeA.kind === typeB.kind;
 
 		// Void
@@ -201,7 +224,7 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 		// Intersections
 		case SimpleTypeKind.INTERSECTION:
-			const combinedIntersectionType = combineIntersectionSimpleTypes(typeA.types);
+			const combinedIntersectionType = combineIntersectingSimpleTypes(typeA.types);
 
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
 				return false;

@@ -1,32 +1,49 @@
-import { Node, Type, TypeChecker } from "typescript";
+import { Node, Program, Type, TypeChecker } from "typescript";
 import { isAssignableToSimpleType } from "./is-assignable-to-simple-type";
 import { isSimpleType, SimpleType } from "./simple-type";
+import { SimpleTypeComparisonOptions } from "./simple-type-comparison-options";
 import { toSimpleType } from "./to-simple-type";
-import { isNode } from "./ts-util";
+import { isNode, isProgram, isTypeChecker } from "./ts-util";
 
 const simpleTypeCache = new WeakMap<Type, SimpleType>();
 const isAssignableTypeCache = new WeakMap<SimpleType, WeakMap<SimpleType, boolean>>();
 
 /**
  * Tests if "typeA = typeB" in strict mode.
- * @param typeA Type A
- * @param typeB Type B
- * @param checker TypeChecker
+ * @param typeA - Type A
+ * @param typeB - Type B
+ * @param checkerOrOptions
+ * @param options
  */
-export function isAssignableToType (typeA: SimpleType, typeB: SimpleType): boolean;
-export function isAssignableToType (typeA: SimpleType | Type | Node, typeB: SimpleType, checker: TypeChecker): boolean;
-export function isAssignableToType (typeA: SimpleType, typeB: SimpleType | Type | Node, checker: TypeChecker): boolean;
-export function isAssignableToType (typeA: Type | Node, typeB: Type | Node, checker: TypeChecker): boolean;
-export function isAssignableToType (typeA: Type | Node | SimpleType, typeB: Type | Node | SimpleType, checker: TypeChecker): boolean;
-export function isAssignableToType (typeA: Type | Node | SimpleType, typeB: Type | Node | SimpleType, checker?: TypeChecker): boolean {
-	if (isNode(typeA)) {
-		return isAssignableToType(checker!.getTypeAtLocation(typeA), typeB, checker!);
-	}
+export function isAssignableToType(typeA: SimpleType, typeB: SimpleType, options?: SimpleTypeComparisonOptions): boolean;
+export function isAssignableToType(typeA: SimpleType | Type | Node, typeB: SimpleType, checker: TypeChecker | Program, options?: SimpleTypeComparisonOptions): boolean;
+export function isAssignableToType(typeA: SimpleType, typeB: SimpleType | Type | Node, checker: TypeChecker | Program, options?: SimpleTypeComparisonOptions): boolean;
+export function isAssignableToType(typeA: Type | Node, typeB: Type | Node, checker: TypeChecker | Program, options?: SimpleTypeComparisonOptions): boolean;
+export function isAssignableToType(
+	typeA: Type | Node | SimpleType,
+	typeB: Type | Node | SimpleType,
+	checker: Program | TypeChecker | SimpleTypeComparisonOptions,
+	options?: SimpleTypeComparisonOptions
+): boolean;
+export function isAssignableToType(
+	typeA: Type | Node | SimpleType,
+	typeB: Type | Node | SimpleType,
+	checkerOrOptions?: TypeChecker | SimpleTypeComparisonOptions | Program,
+	options?: SimpleTypeComparisonOptions
+): boolean {
+	if (typeA === typeB) return true;
 
-	if (isNode(typeB)) {
-		return isAssignableToType(typeA, checker!.getTypeAtLocation(typeB), checker!);
-	}
+	// Get the correct TypeChecker
+	const checker = isTypeChecker(checkerOrOptions) ? checkerOrOptions : isProgram(checkerOrOptions) ? checkerOrOptions.getTypeChecker() : undefined;
 
+	// Get the correct options
+	options = options || (isTypeChecker(checkerOrOptions) ? undefined : isProgram(checkerOrOptions) ? checkerOrOptions.getCompilerOptions() : checkerOrOptions);
+
+	// Check if the types are nodes (in which case we need to get the type of the node)
+	typeA = isNode(typeA) ? checker!.getTypeAtLocation(typeA) : typeA;
+	typeB = isNode(typeB) ? checker!.getTypeAtLocation(typeB) : typeB;
+
+	// Convert the TS types to SimpleTypes
 	const simpleTypeA = isSimpleType(typeA) ? typeA : toSimpleType(typeA, checker!, simpleTypeCache);
 	const simpleTypeB = isSimpleType(typeB) ? typeB : toSimpleType(typeB, checker!, simpleTypeCache);
 
@@ -45,11 +62,11 @@ export function isAssignableToType (typeA: Type | Node | SimpleType, typeB: Type
 	}
 
 	/*console.log("Type A");
-	console.dir(simpleTypeA, { depth: 5 });
-	console.log("Type B");
-	console.dir(simpleTypeB, { depth: 5 });*/
+	 console.dir(simpleTypeA, { depth: 5 });
+	 console.log("Type B");
+	 console.dir(simpleTypeB, { depth: 5 });*/
 
-	const result = isAssignableToSimpleType(simpleTypeA, simpleTypeB);
+	const result = isAssignableToSimpleType(simpleTypeA, simpleTypeB, options);
 
 	typeAResultCache.set(simpleTypeB, result);
 

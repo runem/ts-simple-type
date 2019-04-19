@@ -1,11 +1,12 @@
 import test from "ava";
 import { resolve } from "path";
-import ts, { Node, SyntaxKind, Type, TypeChecker, VariableDeclaration } from "typescript";
+import { CompilerOptions, Diagnostic, Type, TypeChecker, VariableDeclaration, Program } from "typescript";
 import { isAssignableToType } from "../src/is-assignable-to-type";
 import { simpleTypeToString } from "../src/simple-type-to-string";
 import { toSimpleType } from "../src/to-simple-type";
 import { compile } from "./compile";
 import "./compile";
+import { visitAssignments } from "./visit-assignments";
 
 // Example usage: "LINE=2,5 npm test"
 const arg = process.argv.slice(2)[0];
@@ -17,36 +18,34 @@ const RELEVANT_LINES = (() => {
 	}
 })();
 
-interface VisitContext {
-	checker: TypeChecker;
-	foundTest(line: number, typeA: Type, typeB: Type, node: Node): void;
+testTypeAssignments("strict", { strict: true });
+testTypeAssignments("noStrictNullChecks", { strictNullChecks: false });
+
+function testTypeAssignments(testTitle: string, options: CompilerOptions) {
+	const filePath = resolve(process.cwd(), "./test-types/test-types.ts");
+	const { diagnostics, program, sourceFile } = compile(filePath, options);
+	const checker = program.getTypeChecker();
+
+	visitAssignments(sourceFile, {
+		checker: program.getTypeChecker(),
+		foundTest: (line: number, typeA: Type, typeB: Type, node: VariableDeclaration) => {
+			if (RELEVANT_LINES != null && !RELEVANT_LINES.includes(line + 1)) return;
+			try {
+				executeToStringTest(testTitle, line, typeA, typeB, { node, checker });
+				executeTypeCheckerTest(testTitle, line, typeA, typeB, {
+					node,
+					checker,
+					shouldBeAssignable: shouldBeAssignable(diagnostics, line),
+					program
+				});
+			} catch (e) {
+				console.log(e);
+			}
+		}
+	});
 }
 
-function visit(node: ts.Node, ctx: VisitContext) {
-	const { checker } = ctx;
-
-	if (ts.isVariableDeclaration(node) && node.initializer != null) {
-		const line = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line;
-		const typeA = checker.getTypeAtLocation(node);
-		const typeB = checker.getTypeAtLocation(node.initializer);
-
-		ctx.foundTest(line, typeA, typeB, node);
-	} else if (ts.isBinaryExpression(node) && node.operatorToken.kind === SyntaxKind.EqualsToken) {
-		const line = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line;
-		const typeA = checker.getTypeAtLocation(node.left);
-		const typeB = checker.getTypeAtLocation(node.right);
-
-		ctx.foundTest(line, typeA, typeB, node);
-	}
-
-	node.forEachChild(child => visit(child, ctx));
-}
-
-const filePath = resolve(process.cwd(), "./test-types/test-types.ts");
-const { diagnostics, program, sourceFile } = compile(filePath);
-const checker = program.getTypeChecker();
-
-const shouldBeAssignable = (line: number) => {
+function shouldBeAssignable(diagnostics: ReadonlyArray<Diagnostic>, line: number) {
 	for (const diagnostic of diagnostics) {
 		if (diagnostic.file && [2322, 2741, 2740, 2739].includes(diagnostic.code)) {
 			const { line: diagnosticLine } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
@@ -57,25 +56,12 @@ const shouldBeAssignable = (line: number) => {
 	}
 
 	return true;
-};
+}
 
-visit(sourceFile, {
-	checker: program.getTypeChecker(),
-	foundTest: (line: number, typeA: Type, typeB: Type, node: VariableDeclaration) => {
-		if (RELEVANT_LINES != null && !RELEVANT_LINES.includes(line + 1)) return;
-		try {
-			executeToStringTest(line, typeA, typeB, { node, checker });
-			executeTypeCheckerTest(line, typeA, typeB, { node, checker, shouldBeAssignable: shouldBeAssignable(line) });
-		} catch (e) {
-			console.log(e);
-		}
-	}
-});
-
-function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }: { checker: TypeChecker; node: VariableDeclaration }) {
+function executeToStringTest(testTitle: string, line: number, typeA: Type, typeB: Type, { checker }: { checker: TypeChecker; node: VariableDeclaration }) {
 	const typeAStr = checker.typeToString(typeA);
 
-	test(`${line + 1}: simpleTypeToString('${typeAStr}')`, t => {
+	test(`[${testTitle}] ${line + 1}: simpleTypeToString('${typeAStr}')`, t => {
 		const simpleTypeA = toSimpleType(typeA, checker);
 		const simpleTypeAStr = simpleTypeToString(simpleTypeA);
 
@@ -91,7 +77,7 @@ function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }
 	const typeBStr = checker.typeToString(typeB);
 	if (typeAStr === typeBStr) return;
 
-	test(`${line + 1}: simpleTypeToString('${typeBStr}')`, t => {
+	test(`[${testTitle}] ${line + 1}: simpleTypeToString('${typeBStr}')`, t => {
 		const simpleTypeB = toSimpleType(typeB, checker);
 		const simpleTypeBStr = simpleTypeToString(simpleTypeB);
 
@@ -105,12 +91,18 @@ function executeToStringTest(line: number, typeA: Type, typeB: Type, { checker }
 	});
 }
 
-function executeTypeCheckerTest(line: number, typeA: Type, typeB: Type, { checker, shouldBeAssignable }: { checker: TypeChecker; node: VariableDeclaration; shouldBeAssignable: boolean }) {
+function executeTypeCheckerTest(
+	testTitle: string,
+	line: number,
+	typeA: Type,
+	typeB: Type,
+	{ checker, shouldBeAssignable, program }: { checker: TypeChecker; node: VariableDeclaration; shouldBeAssignable: boolean; program: Program }
+) {
 	const typeAStr = checker.typeToString(typeA);
 	const typeBStr = checker.typeToString(typeB);
 
-	test(`${line + 1}: '${typeAStr}' = '${typeBStr}'`, t => {
-		const isAssignable = isAssignableToType(typeA, typeB, checker);
+	test(`[${testTitle}] ${line + 1}: '${typeAStr}' = '${typeBStr}'`, t => {
+		const isAssignable = isAssignableToType(typeA, typeB, program);
 
 		if (shouldBeAssignable !== isAssignable) {
 			const simpleTypeA = toSimpleType(typeA, checker);

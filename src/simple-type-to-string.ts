@@ -1,7 +1,5 @@
 import { SimpleType, SimpleTypeFunctionArgument, SimpleTypeKind } from "./simple-type";
 
-export interface SimpleTypeToStringOptions {}
-
 /**
  * Converts a simple type to a string.
  * @param type Simple Type

@@ -1,7 +1,5 @@
 import { PathLike } from "fs";
 import * as ts from "typescript";
-import { MyTestInterface, MyType } from "./test-types-2";
-import { myTestObj } from "./test-types-3";
 
 // Circular references
 interface MyCircularInterface1 {
@@ -25,9 +23,6 @@ interface MyCircularInterface4<T> {
 type MyCircularType = MyCircularInterface3 | string;
 
 { const _: MyCircularInterface4<string> = {} as MyCircularInterface4<number>; }
-{ const _: MyType = {} as MyType; }
-{ const _: MyType = {} as MyType; }
-{ const _: MyType = {} as MyType; }
 { const _: MyCircularInterface1 = {} as MyCircularInterface1; }
 { const _: ts.Node = {} as MyCircularInterface1; }
 { const _: ChildNode = {}; }
@@ -123,6 +118,14 @@ type foo3<U> = foo<U | string> | foo<U>;
 { const _: foo3<boolean> = {} as () => 1; }
 { const _: foo<string> = {} as () => 1; }
 
+type AGenericFunc = <T, U>(x: T, y: U) => [T, U];
+type BGenericFunc = <S>(x: S, y: S) => [S, S];
+
+//{ const _: AGenericFunc = {} as BGenericFunc; }
+{ const _: BGenericFunc = {} as AGenericFunc; }
+{ const _: BGenericFunc = {} as BGenericFunc; }
+{ const _: AGenericFunc = {} as AGenericFunc; }
+
 // Generic types alias
 type bar<T, U> = T | U | null
 type typeAliasGeneric1<T> = string | number | T;
@@ -141,47 +144,17 @@ type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 
 // Functions
 { const _: Hello = 123; }
-{
-	const _: number = (a: number, b?: MyInterface, ...args: number[]) => {
-		return 123;
-	};
-}
+{ const _: number = (a: number, b?: MyInterface, ...args: number[]) => { return 123; }; }
 { const _: any = (...spread: number[]) => true; }
-{
-	const _: any = (...spread: number[]) => () => {
-	};
-}
-{
-	const _: ((...spread: number[]) => void) = (input: string) => {
-	};
-}
-{
-	const _: ((...spread: number[]) => number) = (input: number) => {
-		return 123;
-	};
-}
+{ const _: any = (...spread: number[]) => () => { }; }
+{ const _: ((...spread: number[]) => void) = (input: string) => { }; }
+{ const _: ((...spread: number[]) => number) = (input: number) => { return 123; }; }
 //{ const _: ((a: number, b: string) => number) = (aa: number) => { return 123; }; }
-{
-	const _: ((a: number, b: string) => number) = (aa: number, bb: string) => {
-		return 123;
-	};
-}
+{ const _: ((a: number, b: string) => number) = (aa: number, bb: string) => { return 123; }; }
 //{ const _: ((a: number, b: string) => number) = (aa: number) => { return 123; }; }
-{
-	const _: ((a: number) => number) = (aa: number, bb: number) => {
-		return 123;
-	};
-}
-{
-	const _: any = (cb: () => boolean) => {
-		return cb();
-	};
-}
-{
-	const _: () => boolean = () => {
-		return true;
-	};
-}
+{ const _: ((a: number) => number) = (aa: number, bb: number) => { return 123; }; }
+{ const _: any = (cb: () => boolean) => { return cb(); }; }
+{ const _: () => boolean = () => { return true; }; }
 { const _: <T>(value?: T | PromiseLike<T>) => void = {} as () => void; }
 { const _: <T>(value: T | PromiseLike<T>) => void = {} as (value: string) => void; }
 { const _: (value: number) => void = {} as (value: string) => void; }
@@ -211,6 +184,10 @@ type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 { const _: void = {} as string; }
 { const _: void = {} as number; }
 { const _: void = undefined; }
+{ const _: undefined = {} as unknown as void; }
+{ const _: null = {} as unknown as void; }
+{ const _: void = {} as unknown as void; }
+{ const _: string = {} as unknown as void; }
 
 type Hello = number;
 
@@ -570,6 +547,8 @@ interface EmptyInterface {}
 { const _: { foo: string, hello: boolean } = {} as IntersectionTypeA; }
 { const _: { foo: string } = {} as { foo: string, hello: boolean }; }
 { const _: IntersectionTypeA = {} as { foo: string, hello: boolean }; }
+{ const _: {hello: string} = {} as {foo: "bar"}; }
+{ const _: {hello: string} = {}; }
 
 // Never
 { const _: never = {} as never; }
