@@ -6,7 +6,7 @@ import { zip } from "./util";
  * This function can return an INTERSECTION type again if the types doesn't overlap.
  * @param types
  */
-export function combineIntersectionSimpleTypes(types: SimpleType[]): SimpleType {
+export function combineIntersectingSimpleTypes(types: SimpleType[]): SimpleType {
 	// TODO: Combine tuples and arrays
 	// TODO: Combine generic type ar
 
@@ -66,7 +66,7 @@ export function combineIntersectionSimpleTypes(types: SimpleType[]): SimpleType 
 						(existing: SimpleTypeArray) =>
 							({
 								kind: SimpleTypeKind.ARRAY,
-								type: combineIntersectionSimpleTypes([type.type, existing.type])
+								type: combineIntersectingSimpleTypes([type.type, existing.type])
 							} as SimpleTypeArray)
 					);
 					break;
@@ -76,7 +76,7 @@ export function combineIntersectionSimpleTypes(types: SimpleType[]): SimpleType 
 					setExistingOrCombine(combined, SimpleTypeKind.TUPLE, type, (existing: SimpleTypeTuple) => {
 						const members = zipCombine(type.members, existing.members, ([mA, mB]) => ({
 							optional: mA.optional && mB.optional,
-							type: combineIntersectionSimpleTypes([mA.type, mB.type])
+							type: combineIntersectingSimpleTypes([mA.type, mB.type])
 						}));
 
 						// Return a tuple with [never] if the length of members are not the same (members is null)
@@ -142,7 +142,7 @@ function combineNamedMembers(members: SimpleTypeMemberNamed[]): SimpleTypeMember
 					setExistingOrCombine(map, member.name, member, existingMember => ({
 						name: member.name,
 						optional: member.optional && existingMember.optional,
-						type: combineIntersectionSimpleTypes([member.type, existingMember.type])
+						type: combineIntersectingSimpleTypes([member.type, existingMember.type])
 					})),
 				new Map<string, SimpleTypeMemberNamed>()
 			)

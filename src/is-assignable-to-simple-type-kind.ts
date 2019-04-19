@@ -3,7 +3,7 @@ import { isSimpleType, SimpleType, SimpleTypeKind } from "./simple-type";
 import { toSimpleType } from "./to-simple-type";
 import { and, or } from "./util";
 
-export interface AssignableToSimpleTypeKindOptions {
+export interface SimpleTypeKindComparisonOptions {
 	op?: "and" | "or";
 	matchAny?: boolean;
 }
@@ -16,19 +16,19 @@ export interface AssignableToSimpleTypeKindOptions {
  * @param checker TypeCHecker if type is a typescript type
  * @param options Options
  */
-export function isAssignableToSimpleTypeKind(type: SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], options?: AssignableToSimpleTypeKindOptions): boolean;
-export function isAssignableToSimpleTypeKind(type: Type, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: AssignableToSimpleTypeKindOptions): boolean;
-export function isAssignableToSimpleTypeKind(type: Type | SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: AssignableToSimpleTypeKindOptions): boolean;
+export function isAssignableToSimpleTypeKind(type: SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], options?: SimpleTypeKindComparisonOptions): boolean;
+export function isAssignableToSimpleTypeKind(type: Type, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: SimpleTypeKindComparisonOptions): boolean;
+export function isAssignableToSimpleTypeKind(type: Type | SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: SimpleTypeKindComparisonOptions): boolean;
 export function isAssignableToSimpleTypeKind(
 	type: Type | SimpleType,
 	kind: SimpleTypeKind | SimpleTypeKind[],
-	optionsOrChecker?: TypeChecker | AssignableToSimpleTypeKindOptions,
-	options: AssignableToSimpleTypeKindOptions = {}
+	optionsOrChecker?: TypeChecker | SimpleTypeKindComparisonOptions,
+	options: SimpleTypeKindComparisonOptions = {}
 ): boolean {
 	if (!isSimpleType(type)) {
 		return isAssignableToSimpleTypeKind(toSimpleType(type, optionsOrChecker as TypeChecker), kind, options);
 	} else {
-		options = (optionsOrChecker as AssignableToSimpleTypeKindOptions) || {};
+		options = (optionsOrChecker as SimpleTypeKindComparisonOptions) || {};
 	}
 
 	// Make sure that an object without members are treated as ANY

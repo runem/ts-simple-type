@@ -1,15 +1,12 @@
-import { combineIntersectionSimpleTypes } from "./combine-intersection-simple-types";
+import { combineIntersectingSimpleTypes } from "./combine-intersecting-simple-types";
 import { isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleTypeGenericArguments, SimpleTypeKind } from "./simple-type";
+import { SimpleTypeComparisonOptions } from "./simple-type-comparison-options";
 import { and, or } from "./util";
 
-export interface SimpleTypeComparisonConfig {
-	strict?: boolean;
-	strictNullChecks?: boolean;
-	strictFunctionTypes?: boolean;
-	noStrictGenericChecks?: boolean;
-}
-
-const DEFAULT_CONFIG: SimpleTypeComparisonConfig = {
+/**
+ * TODO: Remove strict default in a major version change to align with Typescript.
+ */
+const DEFAULT_CONFIG: SimpleTypeComparisonOptions = {
 	strict: true
 };
 
@@ -19,7 +16,7 @@ const DEFAULT_CONFIG: SimpleTypeComparisonConfig = {
  * @param typeB Type B
  * @param config
  */
-export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonConfig = DEFAULT_CONFIG): boolean {
+export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonOptions = DEFAULT_CONFIG): boolean {
 	return isAssignabletoSimpleTypeInternal(typeA, typeB, {
 		config,
 		inCircularA: false,
@@ -31,7 +28,7 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, c
 }
 
 interface IsAssignableToSimpleTypeOptions {
-	config: SimpleTypeComparisonConfig;
+	config: SimpleTypeComparisonOptions;
 	inCircularA: boolean;
 	inCircularB: boolean;
 	insideType: Set<SimpleType>;
@@ -51,12 +48,12 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	}
 
 	// We might need a better way of handling refs, but these check are good for now
-	if (options.insideType.has(typeA)) {
+	if (options.insideType.has(typeA) || options.insideType.has(typeB)) {
 		return true;
 	}
 
 	// Circular types
-	if (options.inCircularA && options.inCircularB) {
+	if (options.inCircularA || options.inCircularB) {
 		return true;
 	}
 
@@ -82,7 +79,7 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.UNION:
 			return and(typeB.types, childTypeB => isAssignabletoSimpleTypeInternal(typeA, childTypeB, options));
 		case SimpleTypeKind.INTERSECTION:
-			const combinedIntersectionType = combineIntersectionSimpleTypes(typeB.types);
+			const combinedIntersectionType = combineIntersectingSimpleTypes(typeB.types);
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
 				return false;
 			}
@@ -102,7 +99,8 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.UNDEFINED:
 		case SimpleTypeKind.NULL:
 			// When strict null checks are turned off, "undefined" and "null" are in the domain of every type
-			if (!options.config.strictNullChecks && !options.config.strict) {
+			const strictNullChecks = options.config.strictNullChecks === true || (options.config.strictNullChecks == null && options.config.strict);
+			if (!strictNullChecks) {
 				return true;
 			}
 	}
@@ -226,7 +224,7 @@ function isAssignabletoSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 		// Intersections
 		case SimpleTypeKind.INTERSECTION:
-			const combinedIntersectionType = combineIntersectionSimpleTypes(typeA.types);
+			const combinedIntersectionType = combineIntersectingSimpleTypes(typeA.types);
 
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
 				return false;

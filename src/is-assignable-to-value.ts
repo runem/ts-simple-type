@@ -18,26 +18,26 @@ export function isAssignableToValue(type: SimpleType | Type, value: any, checker
 			return isAssignableToType(type, {
 				kind: SimpleTypeKind.STRING_LITERAL,
 				value
-			});
+			}, {strict: true});
 		} else if (typeof value === "number") {
 			return isAssignableToType(type, {
 				kind: SimpleTypeKind.NUMBER_LITERAL,
 				value
-			});
+			}, {strict: true});
 		} else if (typeof value === "boolean") {
 			return isAssignableToType(type, {
 				kind: SimpleTypeKind.BOOLEAN_LITERAL,
 				value
-			});
+			}, {strict: true});
 		} else if (value instanceof Promise) {
 			return isAssignableToType(type, {
 				kind: SimpleTypeKind.PROMISE,
 				type: { kind: SimpleTypeKind.ANY }
-			});
+			}, {strict: true});
 		} else if (value instanceof Date) {
 			return isAssignableToType(type, {
 				kind: SimpleTypeKind.DATE
-			});
+			}, {strict: true});
 		}
 
 		throw new Error(`Comparing type "${type.kind}" to value ${value}, type ${typeof value} not supported yet.`);

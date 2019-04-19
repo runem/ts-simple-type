@@ -1,7 +1,6 @@
 import test from "ava";
 import { resolve } from "path";
-import { Diagnostic, Type, TypeChecker, VariableDeclaration } from "typescript";
-import { SimpleTypeComparisonConfig } from "../src/is-assignable-to-simple-type";
+import { CompilerOptions, Diagnostic, Type, TypeChecker, VariableDeclaration, Program } from "typescript";
 import { isAssignableToType } from "../src/is-assignable-to-type";
 import { simpleTypeToString } from "../src/simple-type-to-string";
 import { toSimpleType } from "../src/to-simple-type";
@@ -19,12 +18,12 @@ const RELEVANT_LINES = (() => {
 	}
 })();
 
-testTypeAssignments("strict", { strictNullChecks: true });
-testTypeAssignments("nonStrictNullChecks", { strictNullChecks: false });
+testTypeAssignments("strict", { strict: true });
+testTypeAssignments("noStrictNullChecks", { strictNullChecks: false });
 
-function testTypeAssignments(testTitle: string, config: SimpleTypeComparisonConfig) {
+function testTypeAssignments(testTitle: string, options: CompilerOptions) {
 	const filePath = resolve(process.cwd(), "./test-types/test-types.ts");
-	const { diagnostics, program, sourceFile } = compile(filePath, { strictNullChecks: config.strictNullChecks });
+	const { diagnostics, program, sourceFile } = compile(filePath, options);
 	const checker = program.getTypeChecker();
 
 	visitAssignments(sourceFile, {
@@ -37,7 +36,7 @@ function testTypeAssignments(testTitle: string, config: SimpleTypeComparisonConf
 					node,
 					checker,
 					shouldBeAssignable: shouldBeAssignable(diagnostics, line),
-					config
+					program
 				});
 			} catch (e) {
 				console.log(e);
@@ -97,13 +96,13 @@ function executeTypeCheckerTest(
 	line: number,
 	typeA: Type,
 	typeB: Type,
-	{ checker, shouldBeAssignable, config }: { checker: TypeChecker; node: VariableDeclaration; shouldBeAssignable: boolean; config?: SimpleTypeComparisonConfig }
+	{ checker, shouldBeAssignable, program }: { checker: TypeChecker; node: VariableDeclaration; shouldBeAssignable: boolean; program: Program }
 ) {
 	const typeAStr = checker.typeToString(typeA);
 	const typeBStr = checker.typeToString(typeB);
 
 	test(`[${testTitle}] ${line + 1}: '${typeAStr}' = '${typeBStr}'`, t => {
-		const isAssignable = isAssignableToType(typeA, typeB, checker, config);
+		const isAssignable = isAssignableToType(typeA, typeB, program);
 
 		if (shouldBeAssignable !== isAssignable) {
 			const simpleTypeA = toSimpleType(typeA, checker);

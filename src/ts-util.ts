@@ -1,10 +1,14 @@
-import { BigIntLiteralType, Declaration, GenericType, LiteralType, Node, ObjectType, Symbol, TupleType, Type, TypeChecker, TypeFlags, TypeReference, UniqueESSymbolType } from "typescript";
+import { BigIntLiteralType, Declaration, GenericType, LiteralType, Node, ObjectType, Symbol, TupleType, Type, TypeChecker, TypeFlags, TypeReference, UniqueESSymbolType, Program } from "typescript";
 import { SimpleTypeModifierKind } from "./simple-type";
 import { tsModule } from "./ts-module";
 import { and, or } from "./util";
 
 export function isTypeChecker(obj: any): obj is TypeChecker {
 	return obj != null && typeof obj === "object" && "getSymbolAtLocation" in obj;
+}
+
+export function isProgram(obj: any): obj is Program {
+	return obj != null && typeof obj === "object" && "getTypeChecker" in obj && "getCompilerOptions" in obj;
 }
 
 export function isNode(obj: any): obj is Node {

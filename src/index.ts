@@ -1,3 +1,4 @@
+export * from "./simple-type-comparison-options";
 export * from "./is-assignable-to-primitive-type";
 export * from "./is-assignable-to-type";
 export * from "./is-assignable-to-value";
