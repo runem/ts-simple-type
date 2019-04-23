@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/runem/ts-simple-type/compare/v0.2.28...v0.3.0) (2019-04-23)
+
+
+### Features
+
+* Add support for intersection types and never types ([f7d531b](https://github.com/runem/ts-simple-type/commit/f7d531b))
+* Add support for strict null checks ([19fce94](https://github.com/runem/ts-simple-type/commit/19fce94e869ff1f125764f5d102cda617373d563))
+
+
+
 <a name="0.2.28"></a>
 ## [0.2.28](https://github.com/runem/ts-simple-type/compare/v0.2.27...v0.2.28) (2019-04-08)
 
