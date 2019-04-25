@@ -59,7 +59,19 @@ interface CircularB {
 { const _: CircularA | number = {} as any as CircularA | number; }
 { const _: CircularA = 123; }
 
-// Generics
+// Circular generics
+export interface InterfaceWithRecursiveGenericB<T extends string, F> {
+}
+
+export interface InterfaceWithRecursiveGenericC<T> {
+	data?: T;
+}
+
+export interface InterfaceWithRecursiveGenericA<T extends string> extends InterfaceWithRecursiveGenericB<T, InterfaceWithRecursiveGenericA<T>> {
+	options: InterfaceWithRecursiveGenericC<T>;
+}
+
+{ const _: InterfaceWithRecursiveGenericA<string> | undefined = {} as InterfaceWithRecursiveGenericA<"hello">; }
 
 // Generic interfaces
 interface GenericInterface1<T, U> {
@@ -144,17 +156,47 @@ type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 
 // Functions
 { const _: Hello = 123; }
-{ const _: number = (a: number, b?: MyInterface, ...args: number[]) => { return 123; }; }
+{
+	const _: number = (a: number, b?: MyInterface, ...args: number[]) => {
+		return 123;
+	};
+}
 { const _: any = (...spread: number[]) => true; }
-{ const _: any = (...spread: number[]) => () => { }; }
-{ const _: ((...spread: number[]) => void) = (input: string) => { }; }
-{ const _: ((...spread: number[]) => number) = (input: number) => { return 123; }; }
+{
+	const _: any = (...spread: number[]) => () => {
+	};
+}
+{
+	const _: ((...spread: number[]) => void) = (input: string) => {
+	};
+}
+{
+	const _: ((...spread: number[]) => number) = (input: number) => {
+		return 123;
+	};
+}
 //{ const _: ((a: number, b: string) => number) = (aa: number) => { return 123; }; }
-{ const _: ((a: number, b: string) => number) = (aa: number, bb: string) => { return 123; }; }
+{
+	const _: ((a: number, b: string) => number) = (aa: number, bb: string) => {
+		return 123;
+	};
+}
 //{ const _: ((a: number, b: string) => number) = (aa: number) => { return 123; }; }
-{ const _: ((a: number) => number) = (aa: number, bb: number) => { return 123; }; }
-{ const _: any = (cb: () => boolean) => { return cb(); }; }
-{ const _: () => boolean = () => { return true; }; }
+{
+	const _: ((a: number) => number) = (aa: number, bb: number) => {
+		return 123;
+	};
+}
+{
+	const _: any = (cb: () => boolean) => {
+		return cb();
+	};
+}
+{
+	const _: () => boolean = () => {
+		return true;
+	};
+}
 { const _: <T>(value?: T | PromiseLike<T>) => void = {} as () => void; }
 { const _: <T>(value: T | PromiseLike<T>) => void = {} as (value: string) => void; }
 { const _: (value: number) => void = {} as (value: string) => void; }
@@ -547,14 +589,15 @@ interface EmptyInterface {}
 { const _: { foo: string, hello: boolean } = {} as IntersectionTypeA; }
 { const _: { foo: string } = {} as { foo: string, hello: boolean }; }
 { const _: IntersectionTypeA = {} as { foo: string, hello: boolean }; }
-{ const _: {hello: string} = {} as {foo: "bar"}; }
-{ const _: {hello: string} = {}; }
+{ const _: { hello: string } = {} as { foo: "bar" }; }
+{ const _: { hello: string } = {}; }
 
 // Never
 { const _: never = {} as never; }
 { const _: string = {} as never; }
 { const _: never = {} as string; }
-{ const _: {hello: string} = {} as never; }
-{ const _: {hello: string} = {} as string & number; }
+{ const _: { hello: string } = {} as never; }
+{ const _: { hello: string } = {} as string & number; }
 { const _: never = {} as string & number; }
 { const _: "foo" & "bar" = {} as never; }
+
