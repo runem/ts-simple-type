@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.3.1"></a>
+## [0.3.1](https://github.com/runem/ts-simple-type/compare/v0.2.28...v0.3.1) (2019-04-25)
+
+
+### Bug Fixes
+
+* Fix generic type recursion ([e65b106](https://github.com/runem/ts-simple-type/commit/e65b106))
+
+
+### Features
+
+* Add support for intersection types and never types ([f7d531b](https://github.com/runem/ts-simple-type/commit/f7d531b))
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/runem/ts-simple-type/compare/v0.2.28...v0.3.0) (2019-04-23)
 
