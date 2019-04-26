@@ -40,7 +40,7 @@ export function simpleTypeToString(type: SimpleType): string {
 		case SimpleTypeKind.FUNCTION:
 		case SimpleTypeKind.METHOD:
 			if (type.kind === SimpleTypeKind.FUNCTION && type.name != null) return type.name;
-			const argText = functionArgTypesToString(type.argTypes);
+			const argText = functionArgTypesToString(type.argTypes || []);
 			return `${type.typeParameters != null ? `<${type.typeParameters.map(tp => tp.name).join(",")}>` : ""}(${argText})${
 				type.returnType != null ? ` => ${simpleTypeToString(type.returnType)}` : ""
 			}`;

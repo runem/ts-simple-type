@@ -213,6 +213,22 @@ type typeAliasGeneric2<T> = typeAliasGeneric1<T>
 { const _: (a: string, b: string) => undefined = {} as () => number; }
 { const _: (a: string, b: string) => string = {} as () => number; }
 { const _: (a: string, b: string) => string = {} as () => void; }
+{ const _: () => string = {} as (a: string) => void; }
+{ const _: () => any = {} as (a: string) => void; }
+
+{ const _: Function = {} as () => void; }
+{ const _: Function = {} as (a: string, b: string) => void; }
+{ const _: Function = {} as (a: string) => string; }
+{ const _: Function = {} as {name: string}}
+{ const _: Function | string = {} as () => void; }
+{ const _: Function | string = {} as (a: string, b: string) => void; }
+{ const _: (a: string) => void | string = {} as Function; }
+{ const _: (() => number) = {} as Function; }
+{ const _: string | (() => number) = {} as Function; }
+{ const _: Function = {} as Function; }
+{ const _: (Function | (() => void)) = {} as Function; }
+{ const _: (Function | (() => void)) = {} as Function | (() => void); }
+{ const _: Function = {} as Function | string; }
 
 // PromiseLike
 { const _: PromiseLike<string> = {} as string; }

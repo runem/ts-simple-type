@@ -92,9 +92,9 @@ export interface SimpleTypeFunctionArgument {
 
 export interface SimpleTypeFunction extends SimpleTypeBase {
 	kind: SimpleTypeKind.FUNCTION;
-	argTypes: SimpleTypeFunctionArgument[];
+	argTypes?: SimpleTypeFunctionArgument[];
 	typeParameters?: SimpleTypeGenericParameter[];
-	returnType: SimpleType;
+	returnType?: SimpleType;
 }
 
 export interface SimpleTypeMethod extends SimpleTypeBase {

@@ -16,7 +16,7 @@ const DEFAULT_CONFIG: SimpleTypeComparisonOptions = {
  * @param typeB Type B
  * @param config
  */
-export function isAssignableToSimpleType (typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonOptions = DEFAULT_CONFIG): boolean {
+export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonOptions = DEFAULT_CONFIG): boolean {
 	return isAssignableToSimpleTypeInternal(typeA, typeB, {
 		config,
 		inCircularA: false,
@@ -36,12 +36,12 @@ interface IsAssignableToSimpleTypeOptions {
 	genericParameterMapB: Map<string, SimpleType>;
 }
 
-function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
+function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
 	/**
-	options = { ...options };
-	(options as any).depth = ((options as any).depth || 0) + 1;
-	console.log("###", "\t".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###");
-	/**/
+	 options = { ...options };
+	 (options as any).depth = ((options as any).depth || 0) + 1;
+	 console.log("###", "\t".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###");
+	 /**/
 
 	if (typeA === typeB) {
 		return true;
@@ -188,6 +188,9 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 		case SimpleTypeKind.METHOD:
 			if (typeB.kind !== SimpleTypeKind.FUNCTION && typeB.kind !== SimpleTypeKind.METHOD) return false;
 
+			if (typeB.argTypes == null || typeB.returnType == null) return (typeA.argTypes == null || typeA.returnType == null);
+			if (typeA.argTypes == null || typeA.returnType == null) return true;
+
 			// Any returntype is assignable to void
 			if (typeA.returnType.kind !== SimpleTypeKind.VOID && !isAssignableToSimpleTypeInternal(typeA.returnType, typeB.returnType, options)) return false;
 
@@ -314,7 +317,7 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 	}
 }
 
-function extendTypeParameterMap (genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
+function extendTypeParameterMap(genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
 	if ("typeParameters" in genericType.target) {
 		const parameterEntries = (genericType.target.typeParameters || []).map(
 			(parameter, i) => [parameter.name, genericType.typeArguments[i] || parameter.default || { kind: SimpleTypeKind.ANY }] as [string, SimpleType]

@@ -1,4 +1,4 @@
-import { BigIntLiteralType, Declaration, GenericType, LiteralType, Node, ObjectType, Symbol, TupleType, Type, TypeChecker, TypeFlags, TypeReference, UniqueESSymbolType, Program } from "typescript";
+import { BigIntLiteralType, Declaration, GenericType, LiteralType, Node, ObjectType, Program, Symbol, TupleType, Type, TypeChecker, TypeFlags, TypeReference, UniqueESSymbolType } from "typescript";
 import { SimpleTypeModifierKind } from "./simple-type";
 import { tsModule } from "./ts-module";
 import { and, or } from "./util";
@@ -164,7 +164,7 @@ export function isFunction(type: Type): type is ObjectType {
 	if (!isObject(type)) return false;
 	const symbol = type.getSymbol();
 	if (symbol == null) return false;
-	return (symbol.flags & tsModule.ts.SymbolFlags.Function) !== 0 || (symbol.members != null && symbol.members.has("__call" as any));
+	return (symbol.flags & tsModule.ts.SymbolFlags.Function) !== 0 || symbol.escapedName === "Function" || (symbol.members != null && symbol.members.has("__call" as any));
 }
 
 export function getTypeArguments(type: ObjectType): Type[] {
