@@ -1,6 +1,7 @@
 import { Type, TypeChecker } from "typescript";
 import { isSimpleType, SimpleType, SimpleTypeKind } from "./simple-type";
 import { toSimpleType } from "./to-simple-type";
+import { isTypeChecker } from "./ts-util";
 import { and, or } from "./util";
 
 export interface SimpleTypeKindComparisonOptions {
@@ -16,20 +17,21 @@ export interface SimpleTypeKindComparisonOptions {
  * @param checker TypeCHecker if type is a typescript type
  * @param options Options
  */
-export function isAssignableToSimpleTypeKind(type: SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], options?: SimpleTypeKindComparisonOptions): boolean;
-export function isAssignableToSimpleTypeKind(type: Type, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: SimpleTypeKindComparisonOptions): boolean;
-export function isAssignableToSimpleTypeKind(type: Type | SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: SimpleTypeKindComparisonOptions): boolean;
-export function isAssignableToSimpleTypeKind(
+export function isAssignableToSimpleTypeKind (type: SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], options?: SimpleTypeKindComparisonOptions): boolean;
+export function isAssignableToSimpleTypeKind (type: Type, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: SimpleTypeKindComparisonOptions): boolean;
+export function isAssignableToSimpleTypeKind (type: Type | SimpleType, kind: SimpleTypeKind | SimpleTypeKind[], checker: TypeChecker, options?: SimpleTypeKindComparisonOptions): boolean;
+export function isAssignableToSimpleTypeKind (
 	type: Type | SimpleType,
 	kind: SimpleTypeKind | SimpleTypeKind[],
 	optionsOrChecker?: TypeChecker | SimpleTypeKindComparisonOptions,
 	options: SimpleTypeKindComparisonOptions = {}
 ): boolean {
+
 	if (!isSimpleType(type)) {
 		return isAssignableToSimpleTypeKind(toSimpleType(type, optionsOrChecker as TypeChecker), kind, options);
-	} else {
-		options = (optionsOrChecker as SimpleTypeKindComparisonOptions) || {};
 	}
+
+	options = (isTypeChecker(optionsOrChecker) ? options : optionsOrChecker) || {};
 
 	// Make sure that an object without members are treated as ANY
 	switch (type.kind) {

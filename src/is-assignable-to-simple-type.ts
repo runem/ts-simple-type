@@ -16,7 +16,7 @@ const DEFAULT_CONFIG: SimpleTypeComparisonOptions = {
  * @param typeB Type B
  * @param config
  */
-export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonOptions = DEFAULT_CONFIG): boolean {
+export function isAssignableToSimpleType (typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonOptions = DEFAULT_CONFIG): boolean {
 	return isAssignableToSimpleTypeInternal(typeA, typeB, {
 		config,
 		inCircularA: false,
@@ -36,10 +36,12 @@ interface IsAssignableToSimpleTypeOptions {
 	genericParameterMapB: Map<string, SimpleType>;
 }
 
-function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
+function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
 	/**
 	 options = { ...options };
 	 (options as any).depth = ((options as any).depth || 0) + 1;
+	 //console.log("###", "\t".repeat((options as any).depth), simpleTypeToString(typeA), "===", simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###");
+	 //if ((options as any).depth > 10) return false;
 	 console.log("###", "\t".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###");
 	 /**/
 
@@ -59,6 +61,18 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 	// Any and unknown
 	if (typeA.kind === SimpleTypeKind.UNKNOWN || typeA.kind === SimpleTypeKind.ANY || typeB.kind === SimpleTypeKind.ANY) {
+		return true;
+	}
+
+	// This check has been added to optimize complex types.
+	// It's only run on named non-generic interface, object, alias and class types
+	// Here we compare their names to see if they are equal. For example comparing "HTMLElement === HTMLElement" don't need to traverse both structures.
+	// I will remove this check after I add optimization and caching of comparison results (especially for built in types)
+	// The basic challenge is that types that I compare do not necessarily share references, so a reference check isn't enough
+	if (typeA.kind === typeB.kind
+		&& [SimpleTypeKind.INTERFACE, SimpleTypeKind.OBJECT, SimpleTypeKind.ALIAS, SimpleTypeKind.CLASS].includes(typeA.kind)
+		&& !("typeParameters" in typeA) && !("typeParameters" in typeB)
+		&& (typeA.name && typeB.name && typeA.name === typeB.name) || (typeA === typeB)) {
 		return true;
 	}
 
@@ -194,15 +208,28 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 			// Any returntype is assignable to void
 			if (typeA.returnType.kind !== SimpleTypeKind.VOID && !isAssignableToSimpleTypeInternal(typeA.returnType, typeB.returnType, options)) return false;
 
+			// Test "this" types
+			const typeAThisArg = typeA.argTypes.find(arg => arg.name === "this");
+			const typeBThisArg = typeB.argTypes.find(arg => arg.name === "this");
+
+			if (typeAThisArg != null && typeBThisArg != null) {
+				if (!isAssignableToSimpleTypeInternal(typeAThisArg.type, typeBThisArg.type, options)) {
+					return false;
+				}
+			}
+
+			const argTypesA = typeAThisArg == null ? typeA.argTypes : typeA.argTypes.filter(arg => arg !== typeAThisArg);
+			const argTypesB = typeBThisArg == null ? typeB.argTypes : typeB.argTypes.filter(arg => arg !== typeBThisArg);
+
 			// A function with 0 args can be assigned to any other function
-			if (typeB.argTypes.length === 0) {
+			if (argTypesB.length === 0) {
 				return true;
 			}
 
 			// Compare the types of each arg
-			for (let i = 0; i < Math.max(typeA.argTypes.length, typeB.argTypes.length); i++) {
-				const argA = typeA.argTypes[i];
-				const argB = typeB.argTypes[i];
+			for (let i = 0; i < Math.max(argTypesA.length, argTypesB.length); i++) {
+				const argA = argTypesA[i];
+				const argB = argTypesB[i];
 
 				// If argA is not present, check if argB is optional or not present as well
 				if (argA == null) {
@@ -283,7 +310,6 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 						}) &&
 						and(membersB, memberB => {
 							// Do not allow new props in subtype: contravariance
-							// Strict type checking
 							const memberA = membersA.find(memberA => memberA.name === memberB.name);
 							if (memberA == null) {
 								// If we find a member in typeB which isn't in typeA, allow it if both typeA and typeB are object
@@ -317,7 +343,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	}
 }
 
-function extendTypeParameterMap(genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
+function extendTypeParameterMap (genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
 	if ("typeParameters" in genericType.target) {
 		const parameterEntries = (genericType.target.typeParameters || []).map(
 			(parameter, i) => [parameter.name, genericType.typeArguments[i] || parameter.default || { kind: SimpleTypeKind.ANY }] as [string, SimpleType]

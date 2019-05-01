@@ -25,6 +25,9 @@ type MyCircularType = MyCircularInterface3 | string;
 { const _: MyCircularInterface4<string> = {} as MyCircularInterface4<number>; }
 { const _: MyCircularInterface1 = {} as MyCircularInterface1; }
 { const _: ts.Node = {} as MyCircularInterface1; }
+//{ const _: EventTarget = {} as HTMLElement; }
+//{ const _: (typeof EventTarget["prototype"]["addEventListener"]) = {} as (typeof HTMLElement["prototype"]["addEventListener"]) }
+{ const _: (typeof HTMLElement["prototype"]["addEventListener"]) = {} as (typeof HTMLElement["prototype"]["addEventListener"]) }
 { const _: ChildNode = {}; }
 { const _: HTMLElement = {}; }
 { const _: MyCircularType = {} as MyCircularInterface3; }
@@ -118,11 +121,19 @@ class SampleClassOne implements SampleInterface {
 { const _: SampleClassOne = {} as SampleInterface; }
 { const _: SampleInterface = new SampleClassOne(); }
 
+// Functions with "this"
+{ const _: (test: string) => any = {} as (this: number) => any; }
+{ const _: (a: number) => any = {} as (this: number, a: number) => any; }
+{ const _: (this: string, a: number) => any = {} as (a: number) => any; }
+{ const _: (this: string, a: number) => any = {} as (this: number, a: number) => any; }
+{ const _: (this: string, a: number) => any = {} as (this: any, a: number) => any; }
+
 // Generic functions
 type foo<T> = (t: T) => T | undefined;
 type foo2 = (t: string) => string | undefined;
 type foo3<U> = foo<U | string> | foo<U>;
 
+{ const _: (evt: string) => any = {} as (evt: number) => any; }
 { const _: foo2 = {} as () => 1; }
 { const _: foo<string> = {} as () => 1; }
 { const _: foo3<boolean> = {} as () => 1; }
