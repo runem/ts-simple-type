@@ -1,0 +1,17 @@
+{
+	"env": {
+		"es6": true,
+		"node": true,
+		"browser": true
+	},
+	"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "prettier/@typescript-eslint"],
+	"parserOptions": {
+		"project": "./tsconfig.json"
+	},
+	"parser": "@typescript-eslint/parser",
+	"plugins": ["@typescript-eslint"],
+	"rules": {
+		"@typescript-eslint/no-use-before-define": "off",
+		"@typescript-eslint/explicit-function-return-type": "off"
+	}
+}

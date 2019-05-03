@@ -15,5 +15,5 @@ export function isAssignableToPrimitiveType(type: Type | SimpleType, checker?: T
 		return isAssignableToSimpleTypeKind(type, PRIMITIVE_TYPE_KINDS, { op: "or", matchAny: true });
 	}
 
-	return isAssignableToSimpleTypeKind(type, PRIMITIVE_TYPE_KINDS, checker!, { op: "or", matchAny: true });
+	return isAssignableToSimpleTypeKind(type, PRIMITIVE_TYPE_KINDS, checker as TypeChecker, { op: "or", matchAny: true });
 }

@@ -34,11 +34,10 @@ export function combineIntersectingSimpleTypes(types: SimpleType[]): SimpleType 
 						combined,
 						SimpleTypeKind.INTERFACE,
 						type,
-						(existing: SimpleTypeInterface) =>
-							({
-								kind: SimpleTypeKind.INTERFACE,
-								members: combineNamedMembers([...type.properties, ...type.methods, ...(existing.members || [])])
-							} as SimpleTypeInterface)
+						(existing: SimpleTypeInterface): SimpleTypeInterface => ({
+							kind: SimpleTypeKind.INTERFACE,
+							members: combineNamedMembers([...type.properties, ...type.methods, ...(existing.members || [])])
+						})
 					);
 					break;
 
@@ -49,11 +48,10 @@ export function combineIntersectingSimpleTypes(types: SimpleType[]): SimpleType 
 						combined,
 						SimpleTypeKind.INTERFACE,
 						type,
-						(existing: SimpleTypeInterface) =>
-							({
-								kind: SimpleTypeKind.INTERFACE,
-								members: combineNamedMembers([...(type.members || []), ...(existing.members || [])])
-							} as SimpleTypeInterface)
+						(existing: SimpleTypeInterface): SimpleTypeInterface => ({
+							kind: SimpleTypeKind.INTERFACE,
+							members: combineNamedMembers([...(type.members || []), ...(existing.members || [])])
+						})
 					);
 					break;
 
@@ -63,11 +61,10 @@ export function combineIntersectingSimpleTypes(types: SimpleType[]): SimpleType 
 						combined,
 						SimpleTypeKind.ARRAY,
 						type,
-						(existing: SimpleTypeArray) =>
-							({
-								kind: SimpleTypeKind.ARRAY,
-								type: combineIntersectingSimpleTypes([type.type, existing.type])
-							} as SimpleTypeArray)
+						(existing: SimpleTypeArray): SimpleTypeArray => ({
+							kind: SimpleTypeKind.ARRAY,
+							type: combineIntersectingSimpleTypes([type.type, existing.type])
+						})
 					);
 					break;
 

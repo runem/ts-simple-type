@@ -16,7 +16,7 @@ const DEFAULT_CONFIG: SimpleTypeComparisonOptions = {
  * @param typeB Type B
  * @param config
  */
-export function isAssignableToSimpleType (typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonOptions = DEFAULT_CONFIG): boolean {
+export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonOptions = DEFAULT_CONFIG): boolean {
 	return isAssignableToSimpleTypeInternal(typeA, typeB, {
 		config,
 		inCircularA: false,
@@ -36,7 +36,7 @@ interface IsAssignableToSimpleTypeOptions {
 	genericParameterMapB: Map<string, SimpleType>;
 }
 
-function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
+function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
 	/**
 	 options = { ...options };
 	 (options as any).depth = ((options as any).depth || 0) + 1;
@@ -69,10 +69,14 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 	// Here we compare their names to see if they are equal. For example comparing "HTMLElement === HTMLElement" don't need to traverse both structures.
 	// I will remove this check after I add optimization and caching of comparison results (especially for built in types)
 	// The basic challenge is that types that I compare do not necessarily share references, so a reference check isn't enough
-	if (typeA.kind === typeB.kind
-		&& [SimpleTypeKind.INTERFACE, SimpleTypeKind.OBJECT, SimpleTypeKind.ALIAS, SimpleTypeKind.CLASS].includes(typeA.kind)
-		&& !("typeParameters" in typeA) && !("typeParameters" in typeB)
-		&& (typeA.name && typeB.name && typeA.name === typeB.name) || (typeA === typeB)) {
+	if (
+		(typeA.kind === typeB.kind &&
+			[SimpleTypeKind.INTERFACE, SimpleTypeKind.OBJECT, SimpleTypeKind.ALIAS, SimpleTypeKind.CLASS].includes(typeA.kind) &&
+			!("typeParameters" in typeA) &&
+			!("typeParameters" in typeB) &&
+			(typeA.name && typeB.name && typeA.name === typeB.name)) ||
+		typeA === typeB
+	) {
 		return true;
 	}
 
@@ -92,21 +96,23 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 			return and(typeB.types, childTypeB => isAssignableToSimpleTypeInternal(typeA, childTypeB, options));
 		case SimpleTypeKind.UNION:
 			return and(typeB.types, childTypeB => isAssignableToSimpleTypeInternal(typeA, childTypeB, options));
-		case SimpleTypeKind.INTERSECTION:
+		case SimpleTypeKind.INTERSECTION: {
 			const combinedIntersectionType = combineIntersectingSimpleTypes(typeB.types);
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
 				return false;
 			}
 			return isAssignableToSimpleTypeInternal(typeA, combinedIntersectionType, options);
+		}
 
 		case SimpleTypeKind.ALIAS:
 			return isAssignableToSimpleTypeInternal(typeA, typeB.target, options);
-		case SimpleTypeKind.GENERIC_ARGUMENTS:
+		case SimpleTypeKind.GENERIC_ARGUMENTS: {
 			return isAssignableToSimpleTypeInternal(typeA, typeB.target, {
 				...options,
 				genericParameterMapB: extendTypeParameterMap(typeB, options.genericParameterMapB)
 			});
-		case SimpleTypeKind.GENERIC_PARAMETER:
+		}
+		case SimpleTypeKind.GENERIC_PARAMETER: {
 			const newOptions = {
 				...options,
 				insideType: new Set([...options.insideType, typeB])
@@ -114,14 +120,16 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 
 			const realType = options.genericParameterMapB.get(typeB.name);
 			return isAssignableToSimpleTypeInternal(typeA, realType || typeB.default || { kind: SimpleTypeKind.ANY }, newOptions);
+		}
 
 		case SimpleTypeKind.UNDEFINED:
-		case SimpleTypeKind.NULL:
+		case SimpleTypeKind.NULL: {
 			// When strict null checks are turned off, "undefined" and "null" are in the domain of every type
 			const strictNullChecks = options.config.strictNullChecks === true || (options.config.strictNullChecks == null && options.config.strict);
 			if (!strictNullChecks) {
 				return true;
 			}
+		}
 	}
 
 	switch (typeA.kind) {
@@ -147,12 +155,13 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 		case SimpleTypeKind.STRING:
 		case SimpleTypeKind.BOOLEAN:
 		case SimpleTypeKind.NUMBER:
-		case SimpleTypeKind.BIG_INT:
+		case SimpleTypeKind.BIG_INT: {
 			if (isSimpleTypeLiteral(typeB)) {
 				return PRIMITIVE_TYPE_TO_LITERAL_MAP[typeA.kind] === typeB.kind;
 			}
 
 			return typeA.kind === typeB.kind;
+		}
 
 		case SimpleTypeKind.UNDEFINED:
 		case SimpleTypeKind.NULL:
@@ -188,7 +197,7 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 			});
 
 		// Arrays
-		case SimpleTypeKind.ARRAY:
+		case SimpleTypeKind.ARRAY: {
 			if (typeB.kind === SimpleTypeKind.ARRAY) {
 				return isAssignableToSimpleTypeInternal(typeA.type, typeB.type, options);
 			} else if (typeB.kind === SimpleTypeKind.TUPLE) {
@@ -196,13 +205,14 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 			}
 
 			return false;
+		}
 
 		// Functions
 		case SimpleTypeKind.FUNCTION:
-		case SimpleTypeKind.METHOD:
+		case SimpleTypeKind.METHOD: {
 			if (typeB.kind !== SimpleTypeKind.FUNCTION && typeB.kind !== SimpleTypeKind.METHOD) return false;
 
-			if (typeB.argTypes == null || typeB.returnType == null) return (typeA.argTypes == null || typeA.returnType == null);
+			if (typeB.argTypes == null || typeB.returnType == null) return typeA.argTypes == null || typeA.returnType == null;
 			if (typeA.argTypes == null || typeA.returnType == null) return true;
 
 			// Any returntype is assignable to void
@@ -257,6 +267,7 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 			}
 
 			return true;
+		}
 
 		// Unions and enum members
 		case SimpleTypeKind.ENUM:
@@ -264,7 +275,7 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 			return or(typeA.types, childTypeA => isAssignableToSimpleTypeInternal(childTypeA, typeB, options));
 
 		// Intersections
-		case SimpleTypeKind.INTERSECTION:
+		case SimpleTypeKind.INTERSECTION: {
 			const combinedIntersectionType = combineIntersectingSimpleTypes(typeA.types);
 
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
@@ -272,6 +283,7 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 			}
 
 			return isAssignableToSimpleTypeInternal(combinedIntersectionType, typeB, options);
+		}
 
 		// Interfaces
 		case SimpleTypeKind.INTERFACE:
@@ -293,7 +305,7 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 			switch (typeB.kind) {
 				case SimpleTypeKind.INTERFACE:
 				case SimpleTypeKind.OBJECT:
-				case SimpleTypeKind.CLASS:
+				case SimpleTypeKind.CLASS: {
 					const membersA = typeA.kind === SimpleTypeKind.CLASS ? [...typeA.methods, ...typeA.properties] : typeA.members || [];
 					const membersB = typeB.kind === SimpleTypeKind.CLASS ? [...typeB.methods, ...typeB.properties] : typeB.members || [];
 
@@ -318,6 +330,7 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 							return isAssignableToSimpleTypeInternal(memberA.type, memberB.type, newOptions);
 						})
 					);
+				}
 				default:
 					return false;
 			}
@@ -343,7 +356,7 @@ function isAssignableToSimpleTypeInternal (typeA: SimpleType, typeB: SimpleType,
 	}
 }
 
-function extendTypeParameterMap (genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
+function extendTypeParameterMap(genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
 	if ("typeParameters" in genericType.target) {
 		const parameterEntries = (genericType.target.typeParameters || []).map(
 			(parameter, i) => [parameter.name, genericType.typeArguments[i] || parameter.default || { kind: SimpleTypeKind.ANY }] as [string, SimpleType]

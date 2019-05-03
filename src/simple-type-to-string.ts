@@ -38,21 +38,24 @@ export function simpleTypeToString(type: SimpleType): string {
 		case SimpleTypeKind.NEVER:
 			return "never";
 		case SimpleTypeKind.FUNCTION:
-		case SimpleTypeKind.METHOD:
+		case SimpleTypeKind.METHOD: {
 			if (type.kind === SimpleTypeKind.FUNCTION && type.name != null) return type.name;
 			const argText = functionArgTypesToString(type.argTypes || []);
 			return `${type.typeParameters != null ? `<${type.typeParameters.map(tp => tp.name).join(",")}>` : ""}(${argText})${
 				type.returnType != null ? ` => ${simpleTypeToString(type.returnType)}` : ""
 			}`;
-		case SimpleTypeKind.ARRAY:
+		}
+		case SimpleTypeKind.ARRAY: {
 			const hasMultipleTypes = [SimpleTypeKind.UNION, SimpleTypeKind.INTERSECTION].includes(type.type.kind);
 			let memberType = simpleTypeToString(type.type);
 			if (type.name != null && ["ArrayLike", "ReadonlyArray"].includes(type.name)) return `${type.name}<${memberType}>`;
 			if (hasMultipleTypes && type.type.name == null) memberType = `(${memberType})`;
 			return `${memberType}[]`;
-		case SimpleTypeKind.UNION:
+		}
+		case SimpleTypeKind.UNION: {
 			if (type.name != null) return type.name;
 			return type.types.map(simpleTypeToString).join(" | ");
+		}
 		case SimpleTypeKind.ENUM:
 			return type.name;
 		case SimpleTypeKind.ENUM_MEMBER:
@@ -63,7 +66,7 @@ export function simpleTypeToString(type: SimpleType): string {
 		case SimpleTypeKind.INTERFACE:
 			if (type.name != null) return type.name;
 		// this fallthrough is intentional
-		case SimpleTypeKind.OBJECT:
+		case SimpleTypeKind.OBJECT: {
 			if (type.members == null || type.members.length === 0) return "{}";
 			return `{ ${type.members
 				.map(member => {
@@ -76,11 +79,13 @@ export function simpleTypeToString(type: SimpleType): string {
 					return `${member.name}: ${simpleTypeToString(member.type)}`;
 				})
 				.join("; ")}${type.members.length > 0 ? ";" : ""} }`;
+		}
 		case SimpleTypeKind.TUPLE:
 			return `[${type.members.map(member => `${simpleTypeToString(member.type)}${member.optional ? "?" : ""}`).join(", ")}]`;
-		case SimpleTypeKind.GENERIC_ARGUMENTS:
+		case SimpleTypeKind.GENERIC_ARGUMENTS: {
 			const { target, typeArguments } = type;
 			return typeArguments.length === 0 ? target.name || "" : `${target.name}<${typeArguments.map(simpleTypeToString).join(", ")}>`;
+		}
 		case SimpleTypeKind.PROMISE:
 			return `${type.name || "Promise"}<${simpleTypeToString(type.type)}>`;
 		case SimpleTypeKind.DATE:

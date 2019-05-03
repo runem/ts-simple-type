@@ -263,6 +263,7 @@ export type SimpleType =
 	| SimpleTypeGenericArguments
 	| SimpleTypeGenericParameter;
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function isSimpleType(type: any): type is SimpleType {
 	return typeof type === "object" && "kind" in type && Object.keys(SimpleTypeKind).find((key: string) => SimpleTypeKind[key as any] === type.kind) != null;
 }

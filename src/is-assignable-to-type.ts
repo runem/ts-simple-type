@@ -40,16 +40,16 @@ export function isAssignableToType(
 	options = options || (isTypeChecker(checkerOrOptions) ? undefined : isProgram(checkerOrOptions) ? checkerOrOptions.getCompilerOptions() : checkerOrOptions);
 
 	// Check if the types are nodes (in which case we need to get the type of the node)
-	typeA = isNode(typeA) ? checker!.getTypeAtLocation(typeA) : typeA;
-	typeB = isNode(typeB) ? checker!.getTypeAtLocation(typeB) : typeB;
+	typeA = isNode(typeA) ? (checker as TypeChecker).getTypeAtLocation(typeA) : typeA;
+	typeB = isNode(typeB) ? (checker as TypeChecker).getTypeAtLocation(typeB) : typeB;
 
 	// Convert the TS types to SimpleTypes
-	const simpleTypeA = isSimpleType(typeA) ? typeA : toSimpleType(typeA, checker!, simpleTypeCache);
-	const simpleTypeB = isSimpleType(typeB) ? typeB : toSimpleType(typeB, checker!, simpleTypeCache);
+	const simpleTypeA = isSimpleType(typeA) ? typeA : toSimpleType(typeA, checker as TypeChecker, simpleTypeCache);
+	const simpleTypeB = isSimpleType(typeB) ? typeB : toSimpleType(typeB, checker as TypeChecker, simpleTypeCache);
 
 	const typeAResultCache = (() => {
 		if (isAssignableTypeCache.has(simpleTypeA)) {
-			return isAssignableTypeCache.get(simpleTypeA)!;
+			return isAssignableTypeCache.get(simpleTypeA) as WeakMap<SimpleType, boolean>;
 		}
 
 		const newResultCache = new WeakMap<SimpleType, boolean>();
@@ -58,7 +58,7 @@ export function isAssignableToType(
 	})();
 
 	if (typeAResultCache.has(simpleTypeB)) {
-		return typeAResultCache.get(simpleTypeB)!;
+		return typeAResultCache.get(simpleTypeB) as boolean;
 	}
 
 	/*console.log("Type A");
