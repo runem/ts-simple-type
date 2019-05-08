@@ -70,12 +70,11 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	// I will remove this check after I add optimization and caching of comparison results (especially for built in types)
 	// The basic challenge is that types that I compare do not necessarily share references, so a reference check isn't enough
 	if (
-		(typeA.kind === typeB.kind &&
-			[SimpleTypeKind.INTERFACE, SimpleTypeKind.OBJECT, SimpleTypeKind.ALIAS, SimpleTypeKind.CLASS].includes(typeA.kind) &&
-			!("typeParameters" in typeA) &&
-			!("typeParameters" in typeB) &&
-			(typeA.name && typeB.name && typeA.name === typeB.name)) ||
-		typeA === typeB
+		typeA.kind === typeB.kind &&
+		[SimpleTypeKind.INTERFACE, SimpleTypeKind.OBJECT, SimpleTypeKind.ALIAS, SimpleTypeKind.CLASS].includes(typeA.kind) &&
+		!("typeParameters" in typeA) &&
+		!("typeParameters" in typeB) &&
+		(typeA.name && typeB.name && typeA.name === typeB.name)
 	) {
 		return true;
 	}
@@ -325,7 +324,8 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 							const memberA = membersA.find(memberA => memberA.name === memberB.name);
 							if (memberA == null) {
 								// If we find a member in typeB which isn't in typeA, allow it if both typeA and typeB are object
-								return typeA.kind === SimpleTypeKind.OBJECT && typeB.kind === SimpleTypeKind.OBJECT;
+								//return typeA.kind === SimpleTypeKind.OBJECT && typeB.kind === SimpleTypeKind.OBJECT;
+								return typeA.kind === typeB.kind;
 							}
 							return isAssignableToSimpleTypeInternal(memberA.type, memberB.type, newOptions);
 						})

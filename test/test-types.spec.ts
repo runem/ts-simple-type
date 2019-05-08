@@ -18,8 +18,12 @@ const RELEVANT_LINES = (() => {
 	}
 })();
 
-testTypeAssignments("strict", { strict: true });
-testTypeAssignments("noStrictNullChecks", { strictNullChecks: false });
+if (process.env.STRICT !== "false") {
+	testTypeAssignments("strict", { strict: true });
+}
+if (process.env.STRICT_NULL_CHECKS !== "false") {
+	testTypeAssignments("noStrictNullChecks", { strictNullChecks: false });
+}
 
 function testTypeAssignments(testTitle: string, options: CompilerOptions) {
 	const filePath = resolve(process.cwd(), "./test-types/test-types.ts");
@@ -31,13 +35,18 @@ function testTypeAssignments(testTitle: string, options: CompilerOptions) {
 		foundTest: (line: number, typeA: Type, typeB: Type, node: VariableDeclaration) => {
 			if (RELEVANT_LINES != null && !RELEVANT_LINES.includes(line + 1)) return;
 			try {
-				executeToStringTest(testTitle, line, typeA, typeB, { node, checker });
-				executeTypeCheckerTest(testTitle, line, typeA, typeB, {
-					node,
-					checker,
-					shouldBeAssignable: shouldBeAssignable(diagnostics, line),
-					program
-				});
+				if (process.env.TO_STRING !== "false") {
+					executeToStringTest(testTitle, line, typeA, typeB, { node, checker });
+				}
+
+				if (process.env.TYPE_CHECKER !== "false") {
+					executeTypeCheckerTest(testTitle, line, typeA, typeB, {
+						node,
+						checker,
+						shouldBeAssignable: shouldBeAssignable(diagnostics, line),
+						program
+					});
+				}
 			} catch (e) {
 				console.log(e);
 			}

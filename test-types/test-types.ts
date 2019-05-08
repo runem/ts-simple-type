@@ -512,6 +512,8 @@ type IntersectionType = IntersectionTypeA & { foo: string };
 { const _: IntersectionType = { foo: "" }; }
 { const _: {} & { foo: string } = {} as { foo: string, hello: boolean }; }
 { const _: {} & { foo: string } = {} as { foo: string, hello: boolean }; }
+interface MyInterface { bar: boolean, foo: string }
+{ const _: IntersectionClass & { foo: string } = {} as MyInterface; }
 { const _: IntersectionClass & { foo: string } = {} as { bar: boolean, foo: string }; }
 { const _: { bar: string } & { foo: boolean } = {} as { bar: string, foo: boolean }; }
 { const _: { bar: string } & { foo: string } = {} as { foo: string, bar: boolean }; }
@@ -627,4 +629,37 @@ interface EmptyInterface {}
 { const _: { hello: string } = {} as string & number; }
 { const _: never = {} as string & number; }
 { const _: "foo" & "bar" = {} as never; }
+
+interface Entity {
+	id?: string
+}
+interface Person extends Entity {
+	displayName?: string
+	givenName?: string
+	surname?: string
+	birthday?: string
+	personNotes?: string
+	isFavorite?: boolean
+	postalAddresses?: Location[]
+	jobTitle?: string
+	companyName?: string
+	yomiCompany?: string
+	department?: string
+	officeLocation?: string
+	profession?: string
+	userPrincipalName?: string
+	imAddress?: string
+}
+
+interface PersonDetails {
+	displayName?: string;
+	email?: string;
+	image?: string;
+	givenName?: string;
+	surname?: string;
+}
+
+{ const _: Person = {} as PersonDetails; }
+
+
 

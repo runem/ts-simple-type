@@ -86,7 +86,7 @@ export function isEnum(type: Type) {
 }
 
 export function isBigInt(type: Type) {
-	return hasFlag(type, tsModule.ts.TypeFlags.BigIntLike);
+	return hasFlag(type, tsModule.ts.TypeFlags.BigIntLike) || (type.symbol && type.symbol.getName() === "BigInt");
 }
 
 export function isObject(type: Type): type is ObjectType {
