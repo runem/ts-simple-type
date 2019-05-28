@@ -225,7 +225,7 @@ export interface SimpleTypeVoid extends SimpleTypeBase {
 	kind: SimpleTypeKind.VOID;
 }
 
-export interface SimpleTyoeCircularRef extends SimpleTypeBase {
+export interface SimpleTypeCircularRef extends SimpleTypeBase {
 	kind: SimpleTypeKind.CIRCULAR_TYPE_REF;
 	ref: SimpleType;
 }
@@ -234,7 +234,7 @@ export type SimpleType =
 	| SimpleTypeBigIntLiteral
 	| SimpleTypeEnumMember
 	| SimpleTypeEnum
-	| SimpleTyoeCircularRef
+	| SimpleTypeCircularRef
 	| SimpleTypeClass
 	| SimpleTypeFunction
 	| SimpleTypeObject
