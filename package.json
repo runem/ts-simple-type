@@ -48,12 +48,6 @@
 		"standard-version": "^4.4.0",
 		"typescript": "^3.4.0"
 	},
-	"prettier": {
-		"useTabs": true,
-		"tabWidth": 4,
-		"singleQuote": false,
-		"printWidth": 200
-	},
 	"husky": {
 		"hooks": {
 			"pre-commit": "pretty-quick --staged"
