@@ -14,7 +14,6 @@
 		"outDir": "./dist",
 		"downlevelIteration": true,
 		"strict": true,
-		"esModuleInterop": true,
 		"noImplicitAny": true,
 		"allowUnusedLabels": false,
 		"allowUnreachableCode": false,
