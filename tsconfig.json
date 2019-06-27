@@ -1,6 +1,7 @@
 {
 	"include": ["src", "test"],
 	"compilerOptions": {
+		"incremental": true,
 		"plugins": [
 			{
 				"name": "tslint-language-service",

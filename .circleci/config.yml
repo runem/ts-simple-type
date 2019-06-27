@@ -27,5 +27,16 @@ jobs:
                       - node_modules
                   key: v1-dependencies-{{ checksum "package.json" }}
 
+            # Restore the dist cache (for incremental builds)
+            - restore_cache:
+                  keys:
+                      - dist-v1-{{ .Branch }}
+
             # run tests!
             - run: npm test
+
+            # Save the dist cache (for incremental builds)
+            - save_cache:
+                  paths:
+                      - dist
+                  key: dist-v1-{{ .Branch }}-{{ epoch }}
