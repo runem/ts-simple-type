@@ -60,7 +60,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	}
 
 	// Any and unknown
-	if (typeA.kind === SimpleTypeKind.UNKNOWN || typeA.kind === SimpleTypeKind.ANY || typeB.kind === SimpleTypeKind.ANY) {
+	if (typeA.kind === SimpleTypeKind.UNKNOWN || typeA.kind === SimpleTypeKind.ANY) {
 		return true;
 	}
 
@@ -80,7 +80,12 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	}
 
 	switch (typeB.kind) {
+		case SimpleTypeKind.ANY:
+			// "any" can be assigned to anything but "never"
+			return typeA.kind !== SimpleTypeKind.NEVER;
+
 		case SimpleTypeKind.NEVER:
+			// "never" can be assigned to anything
 			return true;
 
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
@@ -128,6 +133,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 			if (!strictNullChecks) {
 				return true;
 			}
+			break;
 		}
 	}
 
@@ -148,6 +154,12 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 			return isSimpleTypeLiteral(typeB) ? typeA.value === typeB.value : false;
 
 		case SimpleTypeKind.ENUM_MEMBER:
+			// There exists an interesting rule that you can always assign a "number" or any "number literal" to a "number literal"
+			//   when the "number literal" is from an enum member type.
+			if (typeA.type.kind === SimpleTypeKind.NUMBER_LITERAL && [SimpleTypeKind.NUMBER, SimpleTypeKind.NUMBER_LITERAL].includes(typeB.kind)) {
+				return true;
+			}
+
 			return isAssignableToSimpleTypeInternal(typeA.type, typeB, options);
 
 		// Primitive types
