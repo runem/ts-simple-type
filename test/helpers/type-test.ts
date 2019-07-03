@@ -9,6 +9,8 @@ export type TypescriptType = ITypescriptType | string;
 
 export type TypeTest = [TypescriptType, TypescriptType];
 
+let randomId = 100;
+
 /**
  * Prepares type test code for a type
  * @param type
@@ -18,7 +20,7 @@ function prepareTypeTestCode(type: TypescriptType): { setup?: string; type: stri
 		return { type };
 	}
 
-	const id = Math.round(Math.random() * 100);
+	const id = randomId++;
 
 	return {
 		setup: typeof type.setup === "string" ? type.setup : type.setup(id),
@@ -36,7 +38,7 @@ function generateTypeTestCode([tA, tB]: TypeTest, subTypes: TypescriptType[]): {
 	const { type: typeA, setup: setupA } = prepareTypeTestCode(tA);
 	const { type: typeB, setup: setupB } = prepareTypeTestCode(tB);
 
-	const testCode = `{ const _: ${typeA} = {} as ${typeB}; }`;
+	const testCode = `{ const _: ${typeA} = {} as any as ${typeB}; }`;
 
 	return {
 		setupCode: [...((setupA && [setupA]) || []), ...((setupB && [setupB]) || [])],

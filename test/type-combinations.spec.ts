@@ -44,7 +44,7 @@ export const UNION_TYPES: TypescriptType[] = [`string | number`, `undefined | nu
 
 export const INTERSECTION_TYPES: TypescriptType[] = [
 	`{ foo: string }[] & { bar: number }[]`,
-	`{ foo: string, bar: boolean } & { hello (): void }; }`,
+	`{ foo: string, bar: boolean } & { hello (): void };`,
 	`[{ foo: string }] & { bar: number }`,
 	`[string, number] & [string, number]`,
 	`[string, number] & [string]`
@@ -110,4 +110,7 @@ export const ALL_TYPES: TypescriptType[] = [
 	...EXTRA_TYPES
 ];
 
-testAssignments(ALL_TYPES, ALL_TYPES);
+const A_TYPES = process.env.TYPEA == null ? ALL_TYPES : process.env.TYPEA.split(";");
+const B_TYPES = process.env.TYPEB == null ? ALL_TYPES : process.env.TYPEB.split(";");
+
+testAssignments(A_TYPES, B_TYPES);

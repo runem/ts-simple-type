@@ -13,11 +13,20 @@ import { visitComparisonsInTestCode } from "./visit-type-comparisons";
  */
 export function testAssignments(typesX: TypescriptType[], typesY: TypescriptType[]) {
 	if (process.env.STRICT == null || process.env.STRICT === "true") {
-		testCombinedTypeAssignment(typesX, typesY, { strict: true });
+		const failedComparisons = testCombinedTypeAssignment(typesX, typesY, { strict: true });
+		console.log(failedComparisons);
+		if (failedComparisons.length > 0) {
+			console.log(`\n❌ ${failedComparisons.length} failed strict tests:`);
+			failedComparisons.forEach(comparison => `  ${comparison}`);
+		}
 	}
 
 	if (process.env.STRICT == null || process.env.STRICT === "false") {
-		testCombinedTypeAssignment(typesX, typesY, { strict: false });
+		const failedComparisons = testCombinedTypeAssignment(typesX, typesY, { strict: false });
+		if (failedComparisons.length > 0) {
+			console.log(`\n❌ ${failedComparisons.length} failed strict tests:`);
+			failedComparisons.forEach(comparison => `  ${comparison}`);
+		}
 	}
 }
 
@@ -27,12 +36,14 @@ export function testAssignments(typesX: TypescriptType[], typesY: TypescriptType
  * @param typesY
  * @param compilerOptions
  */
-export function testCombinedTypeAssignment(typesX: TypescriptType[], typesY: TypescriptType[], compilerOptions: CompilerOptions = {}) {
+export function testCombinedTypeAssignment(typesX: TypescriptType[], typesY: TypescriptType[], compilerOptions: CompilerOptions = {}): string[] {
 	const testCode = generateCombinedTypeTestCode(typesX, typesY);
 
 	const testTitleSet = new Set<string>();
 
 	const onlyLines = process.env.LINE == null ? undefined : process.env.LINE.split(",").map(Number);
+
+	const failedComparisons: string[] = [];
 
 	visitComparisonsInTestCode(
 		testCode,
@@ -48,14 +59,28 @@ export function testCombinedTypeAssignment(typesX: TypescriptType[], typesY: Typ
 			testTitleSet.add(testTitle);
 
 			test(testTitle, t => {
-				const actualResult = isAssignableToType(typeA, typeB, program);
+				const simpleTypeA = toSimpleType(typeA, checker);
+				const simpleTypeB = toSimpleType(typeB, checker);
+
+				const actualResult = isAssignableToType(simpleTypeA, simpleTypeB, program);
+
+				if (actualResult === expectedResult && process.env.DEBUG === "true") {
+					console.log("");
+					console.log("\x1b[4m%s\x1b[0m", testTitle);
+					console.log(`Expected: ${expectedResult}, Actual: ${actualResult}`);
+					console.log("");
+					console.log("\x1b[1m%s\x1b[0m", "Simple Type A");
+					console.log(inspect(simpleTypeA, false, null, true));
+					console.log("");
+					console.log("\x1b[1m%s\x1b[0m", "Simple Type B");
+					console.log(inspect(simpleTypeB, false, null, true));
+				}
 
 				if (actualResult !== expectedResult) {
-					const simpleTypeA = toSimpleType(typeA, checker);
-					const simpleTypeB = toSimpleType(typeB, checker);
-
 					t.log("Simple Type A", inspect(simpleTypeA, false, null, true));
 					t.log("Simple Type B", inspect(simpleTypeB, false, null, true));
+
+					failedComparisons.push(`[${line}] ${typeAString} === ${typeBString}`);
 
 					return t.fail(
 						`${actualResult ? "Can" : "Can't"} assign '${typeBString}' (${simpleTypeB.kind}) to '${typeAString}' (${simpleTypeA.kind}) but ${
@@ -69,4 +94,6 @@ export function testCombinedTypeAssignment(typesX: TypescriptType[], typesY: Typ
 		},
 		compilerOptions
 	);
+
+	return failedComparisons;
 }
