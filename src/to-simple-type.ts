@@ -42,7 +42,7 @@ import {
 	isObjectTypeReference,
 	isPromise,
 	isString,
-	isTuple,
+	isTupleTypeReference,
 	isUndefined,
 	isUnknown,
 	isVoid
@@ -270,15 +270,17 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 			type: toSimpleTypeInternalCaching(getTypeArguments(type)[0], options),
 			name
 		};
-	} else if (isTuple(type)) {
+	} else if (isTupleTypeReference(type)) {
 		const types = getTypeArguments(type);
+
+		const minLength = type.target.minLength;
 
 		return {
 			kind: SimpleTypeKind.TUPLE,
-			members: types.map(childType => {
-				const childSymbol = childType.getSymbol();
+			hasRestElement: type.target.hasRestElement || false,
+			members: types.map((childType, i) => {
 				return {
-					optional: childSymbol != null ? (childSymbol.flags & tsModule.ts.SymbolFlags.Optional) !== 0 : false,
+					optional: i >= minLength,
 					type: toSimpleTypeInternalCaching(childType, options)
 				};
 			}),

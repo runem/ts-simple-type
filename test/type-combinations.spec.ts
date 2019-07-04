@@ -15,7 +15,7 @@ export const PRIMITIVE_TYPES: TypescriptType[] = [...BOOLEAN_TYPES, ...NUMBER_TY
 
 export const SPECIAL_TYPES: TypescriptType[] = [`never`, `void`, `any`, `unknown`];
 
-export const TUPLE_TYPES: TypescriptType[] = [`[]`, `[string]`, `[string, number]`, `["foo"]`, `[{ foo: string, bar: number }]`];
+export const TUPLE_TYPES: TypescriptType[] = [`[]`, `[string]`, `[string, number]`, `[string, boolean?]`, `[string, ...boolean[]]`, `[{ foo: string, bar: number }]`];
 
 export const ARRAY_TYPES: TypescriptType[] = [`string[]`, `number[]`, `ReadonlyArray<string | number>`, `(number | string)[]`, `["foo", 123]`, `["foo", true, 123]`, `{ foo: string, bar: number }[];`];
 

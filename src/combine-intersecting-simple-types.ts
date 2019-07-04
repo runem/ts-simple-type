@@ -1,5 +1,4 @@
 import { isSimpleTypeLiteral, isSimpleTypePrimitive, SimpleType, SimpleTypeArray, SimpleTypeInterface, SimpleTypeKind, SimpleTypeLiteral, SimpleTypeMemberNamed, SimpleTypeTuple } from "./simple-type";
-import { zip } from "./util";
 
 /**
  * Combines multiple intersecting types into one single type.
@@ -12,11 +11,19 @@ export function combineIntersectingSimpleTypes(types: SimpleType[]): SimpleType 
 
 	const combined = new Map<SimpleTypeKind, SimpleType>();
 
+	let impossibleToCombine = false;
+
 	// Loop through types adding and combining them into the "combined" map
 	for (const type of types) {
 		// Check for overlapping type literals
 		if (isSimpleTypeLiteral(type)) {
-			setExistingOrCombine(combined, type.kind, type, (existing: SimpleTypeLiteral) => (existing.value === type.value ? existing : { kind: SimpleTypeKind.NEVER }));
+			setExistingOrCombine(combined, type.kind, type, (existing: SimpleTypeLiteral) => {
+				if (existing.value !== type.value) {
+					impossibleToCombine = true;
+				}
+
+				return existing;
+			});
 		}
 
 		// Check for overlapping type primities
@@ -71,20 +78,33 @@ export function combineIntersectingSimpleTypes(types: SimpleType[]): SimpleType 
 				// Combine tuples
 				case SimpleTypeKind.TUPLE:
 					setExistingOrCombine(combined, SimpleTypeKind.TUPLE, type, (existing: SimpleTypeTuple) => {
-						const members = zipCombine(type.members, existing.members, ([mA, mB]) => ({
-							optional: mA.optional && mB.optional,
-							type: combineIntersectingSimpleTypes([mA.type, mB.type])
+						const members = zipCombine(type.members, existing.members, (mA, mB) => ({
+							optional: (mA && mA.optional && mB && mB.optional) || false,
+							type: mA != null && mB != null ? combineIntersectingSimpleTypes([mA.type, mB.type]) : mA != null ? mA.type : mB!.type
 						}));
+						//console.log(members);
+						/*const members = zipCombine(type.members, existing.members, ([mA, mB]) => ({
+						 optional: mA.optional && mB.optional,
+						 type: combineIntersectingSimpleTypes([mA.type, mB.type])
+						 }));*/
 
 						// Return a tuple with [never] if the length of members are not the same (members is null)
 						return {
 							...type,
-							members: members == null ? [{ type: { kind: SimpleTypeKind.NEVER } }] : members
+							members
 						} as SimpleTypeTuple;
 					});
 					break;
 			}
 		}
+	}
+
+	// Return the intersection of the original types if we gave up midway
+	if (impossibleToCombine) {
+		return {
+			kind: SimpleTypeKind.INTERSECTION,
+			types
+		};
 	}
 
 	// If all types were combined into one, return this one
@@ -108,9 +128,11 @@ export function combineIntersectingSimpleTypes(types: SimpleType[]): SimpleType 
  * @param listB
  * @param combine
  */
-function zipCombine<T, U>(listA: T[], listB: U[], combine: (lists: [T, U]) => T | U): (T | U)[] | null {
-	const result = zip(listA, listB);
-	return result == null ? null : result.map(combine);
+function zipCombine<T, U>(listA: T[], listB: U[], combine: (a: T, b: U) => T | U): (T | U)[] {
+	//function zipCombine<T, U>(listA: T[], listB: U[], combine: (list: [T, U]) => T | U): (T | U)[] | null {
+	return new Array(Math.max(listA.length, listB.length)).fill({} as any).map((_, i) => combine(listA[i], listB[i]));
+	//const result = zip(listA, listB);
+	//return result == null ? null : result.map(combine);
 }
 
 /**

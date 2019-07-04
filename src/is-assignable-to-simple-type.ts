@@ -1,11 +1,9 @@
 import { combineIntersectingSimpleTypes } from "./combine-intersecting-simple-types";
 import { isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleTypeGenericArguments, SimpleTypeKind } from "./simple-type";
 import { SimpleTypeComparisonOptions } from "./simple-type-comparison-options";
+import { getTupleLengthType } from "./simple-type-util";
 import { and, or } from "./util";
 
-/**
- * TODO: Remove strict default in a major version change to align with Typescript.
- */
 const DEFAULT_CONFIG: SimpleTypeComparisonOptions = {
 	strict: true
 };
@@ -37,13 +35,26 @@ interface IsAssignableToSimpleTypeOptions {
 }
 
 function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
-	/**
-	 options = { ...options };
-	 (options as any).depth = ((options as any).depth || 0) + 1;
-	 //console.log("###", "\t".repeat((options as any).depth), simpleTypeToString(typeA), "===", simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###");
-	 //if ((options as any).depth > 10) return false;
-	 console.log("###", "\t".repeat((options as any).depth), require("./simple-type-to-string").simpleTypeToString(typeA), "===", require("./simple-type-to-string").simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###");
-	 /**/
+	/**/
+	options = { ...options };
+	(options as any).depth = ((options as any).depth || 0) + 1;
+	//console.log("###", "\t".repeat((options as any).depth), simpleTypeToString(typeA), "===", simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###");
+	//if ((options as any).depth > 10) return false;
+	console.log(
+		"###",
+		"\t".repeat((options as any).depth),
+		require("./simple-type-to-string").simpleTypeToString(typeA),
+		"===",
+		require("./simple-type-to-string").simpleTypeToString(typeB),
+		"(",
+		typeA.kind,
+		"===",
+		typeB.kind,
+		")",
+		(options as any).depth,
+		"###"
+	);
+	/**/
 
 	if (typeA === typeB) {
 		return true;
@@ -102,8 +113,12 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 			return and(typeB.types, childTypeB => isAssignableToSimpleTypeInternal(typeA, childTypeB, options));
 		case SimpleTypeKind.INTERSECTION: {
 			const combinedIntersectionType = combineIntersectingSimpleTypes(typeB.types);
+
+			console.log(`combined`);
+			console.dir(combinedIntersectionType, { depth: null });
+
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
-				return false;
+				return or(combinedIntersectionType.types, memberB => isAssignableToSimpleTypeInternal(typeA, memberB, options));
 			}
 			return isAssignableToSimpleTypeInternal(typeA, combinedIntersectionType, options);
 		}
@@ -288,9 +303,11 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		// Intersections
 		case SimpleTypeKind.INTERSECTION: {
 			const combinedIntersectionType = combineIntersectingSimpleTypes(typeA.types);
+			console.log(`combined`);
+			console.dir(combinedIntersectionType, { depth: null });
 
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
-				return false;
+				return and(combinedIntersectionType.types, memberA => isAssignableToSimpleTypeInternal(memberA, typeB, options));
 			}
 
 			return isAssignableToSimpleTypeInternal(combinedIntersectionType, typeB, options);
@@ -350,6 +367,14 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 		case SimpleTypeKind.TUPLE: {
 			if (typeB.kind !== SimpleTypeKind.TUPLE) return false;
+
+			console.log(getTupleLengthType(typeA), getTupleLengthType(typeB));
+			if (!isAssignableToSimpleTypeInternal(getTupleLengthType(typeA), getTupleLengthType(typeB), options)) {
+				console.log(`- not assignable`);
+				return false;
+			}
+			console.log(`- assignable`);
+
 			return and(typeA.members, (memberA, i) => {
 				const memberB = typeB.members[i];
 				if (memberB == null) return memberA.optional;

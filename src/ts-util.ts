@@ -1,4 +1,19 @@
-import { BigIntLiteralType, Declaration, GenericType, LiteralType, Node, ObjectType, Program, Symbol, TupleType, Type, TypeChecker, TypeFlags, TypeReference, UniqueESSymbolType } from "typescript";
+import {
+	BigIntLiteralType,
+	Declaration,
+	GenericType,
+	LiteralType,
+	Node,
+	ObjectType,
+	Program,
+	Symbol,
+	TupleTypeReference,
+	Type,
+	TypeChecker,
+	TypeFlags,
+	TypeReference,
+	UniqueESSymbolType
+} from "typescript";
 import { SimpleTypeModifierKind } from "./simple-type";
 import { tsModule } from "./ts-module";
 import { and, or } from "./util";
@@ -154,7 +169,7 @@ export function isDate(type: Type): type is ObjectType {
 	return symbol.getName() === "Date";
 }
 
-export function isTuple(type: Type): type is TupleType {
+export function isTupleTypeReference(type: Type): type is TupleTypeReference {
 	const target = getTargetType(type);
 	if (target == null) return false;
 	return (target.objectFlags & tsModule.ts.ObjectFlags.Tuple) !== 0;

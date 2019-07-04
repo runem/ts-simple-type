@@ -130,6 +130,8 @@ export interface SimpleTypeObject extends SimpleTypeBase {
 export interface SimpleTypeTuple extends SimpleTypeBase {
 	kind: SimpleTypeKind.TUPLE;
 	members: SimpleTypeMember[];
+	hasRestElement?: boolean;
+	lengthType?: SimpleType;
 }
 
 export interface SimpleTypeArray extends SimpleTypeBase {
