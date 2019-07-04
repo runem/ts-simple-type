@@ -17,7 +17,14 @@ export const SPECIAL_TYPES: TypescriptType[] = [`never`, `void`, `any`, `unknown
 
 export const TUPLE_TYPES: TypescriptType[] = [`[]`, `[string]`, `[string, number]`, `[string, boolean?]`, `[string, ...boolean[]]`, `[{ foo: string, bar: number }]`];
 
-export const ARRAY_TYPES: TypescriptType[] = [`string[]`, `number[]`, `ReadonlyArray<string | number>`, `(number | string)[]`, `["foo", 123]`, `["foo", true, 123]`, `{ foo: string, bar: number }[];`];
+export const ARRAY_TYPES: TypescriptType[] = [
+	`string[]`,
+	`number[]` /*, `ReadonlyArray<string | number>`*/,
+	`(number | string)[]`,
+	`["foo", 123]`,
+	`["foo", true, 123]`,
+	`{ foo: string, bar: number }[];`
+];
 
 export const OBJECT_TYPES: TypescriptType[] = [`{}`, `{a: string}`, `{a: string, b: number}`, `{a: number}`, `{ foo: "", bar: true }`];
 
@@ -50,7 +57,7 @@ export const INTERSECTION_TYPES: TypescriptType[] = [
 	`[string, number] & [string]`
 ];
 
-export const EXTRA_TYPES: TypescriptType[] = [`Date`, `Promise<string>`, `Promise<number>`];
+export const EXTRA_TYPES: TypescriptType[] = [`Date`, `Promise<string>`, `Promise<number>` /*, `HTMLElement`, `Element`*/];
 
 export const TYPE_ALIAS_TYPES: TypescriptType[] = [
 	{

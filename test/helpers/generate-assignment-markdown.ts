@@ -65,7 +65,7 @@ Each cell shows if the assignment \`typeA = typeB\` is valid.
  * @param path
  */
 export function writeAssignmentMarkdown(path: string = "./assignments.md") {
-	const markdown = generateAssignmentMarkdown([...PRIMITIVE_TYPES, ...SPECIAL_TYPES, "{}"]);
+	const markdown = generateAssignmentMarkdown([...PRIMITIVE_TYPES, ...SPECIAL_TYPES, "{}", "void"]);
 	const absolutePath = join(process.cwd(), path);
 	console.log(`Writing comparison table to ${absolutePath}`);
 	writeFileSync(absolutePath, markdown);

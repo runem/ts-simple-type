@@ -480,15 +480,6 @@ interface IntersectionTypeA {
 
 type IntersectionType = IntersectionTypeA & { foo: string };
 
-const aaaa: {bar: boolean} & { bar: string };
-
-// "and"
-// {bar: boolean} === { foo: "", bar: true };
-{ const _: {bar: boolean} & { foo: string } = { foo: "", bar: true }; }
-{ const _: {bar: boolean} & { bar: number } = { bar: true }; }
-
-{ const _: {bar: boolean} & [string] = {} as [string]; }
-
 { const _: IntersectionType = {} as IntersectionType; }
 { const _: IntersectionType = { foo: "", bar: true }; }
 { const _: { foo: string }[] & { bar: number }[] = {} as ["hello"]; }
@@ -496,61 +487,15 @@ const aaaa: {bar: boolean} & { bar: string };
 { const _: { foo: string }[] & { bar: number }[] = {} as [{ foo: string, bar: number }]; }
 { const _: { foo: string }[] & { bar: number }[] = {} as [{ foo: string, bar: number }, number]; }
 { const _: { foo: string }[] & { bar: number }[] = {} as [{ foo: string }] & { bar: number }; }
-
+{ const _: string[] = {} as [string, number]; }
 { const _: string & number = {} as any; }
-
-const a: ((1 | 2) & (1 | 4 | (3 & 1)));
-
-const a: ((1 | 2) & (1 | (4 | 5) | ""));
-const a: ((1 | 2) & 2);
-
-const a: ([string, number?] & [string, number?, boolean?])["length"];
-const a: ([string, number?] & [string])["length"];
-
-const a: ([])["length"];
-const a: ([string, (boolean | undefined)?])["length"];
-
-const a: ([string, number, string] & [string, boolean])["length"];
-const a: ([string, number?])["length"];
-const a: ([string, number?] & [string])["length"];
-const a: ([])["length"];
-const a: ([string, ...number[]])["length"];
-const a: ([string, (boolean | undefined)?])["length"];
-{ const _: [string] = {} as [string, number] & [string]; }
-
-{ const _: [string, ...number[]] = {} as [string, number]; }
-{ const _: [string, ...string[]] = {} as [string, number]; }
-{ const _: [string] = {} as [string, number] & [string]; }
-
-{ const _: [string, ...number[]] = {} as [string, number?]; }
-{ const _: [string, ...number[]] = {} as [string, number?]; }
-type AAA = [string, ...number[]];
-	const a: AAA["length"];
-type BBB = 2 & 1;
-const b: number =  {} as 2 & 1;
-const c: string =  {} as 2 & "";
-
-const c: string | number =  {} as 2 | ""; // "and([2, '""'])
-
 { const _: [string] = {} as [string, number] & [string]; }
 { const _: [...string[]] = {} as [string, number] & [string]; }
-
-
-                       // 1. prøver at merge,  2. backup er "or"
-{ const _: [string, number?] = {} as [string, number] & [number]; } // 2 === 1 & 2
-{ const _: [string] = {} as [string, number] & [string]; } // 1 === 1 & 2
-
-{ const _: [string] = {} as [string, boolean?]; } // 1 === 1 & 2
-
 { const _: [string, number] & [string] = {} as [string, number] }
 { const _: [string, number] & [string] = {} as [string, number] & [string] }
 { const _: [string, number] & [string] = {} as [string, number] | [string] }
-
 { const _: [{ foo: string; }] & { bar: number; } = {}  as [{ foo: string; }] & { bar: number; } }
 { const _: [{ foo: string; }] & { bar: number; } = {}  as [{ foo: string; }] & { bar: string; } }
-
-
-//{ const _: { foo: string }[] & { bar: number }[] = {} as [{ foo: string }] & { bar: number }[]; }
 //{ const _: { foo: string }[] & ({ bar: number }[] | { bar: boolean }) = {} as [{ foo: string }] & { bar: number }[]; }
 //{ const _: { foo: string }[] & { bar: number }[] | { bar: boolean } = {} as [{ foo: string }] & { bar: number }[]; }
 //{ const _: [{ foo: string }, number] & [{ bar: boolean }, number] = {} as [{ foo: "" }, number] & [{ bar: true }, 123]; }

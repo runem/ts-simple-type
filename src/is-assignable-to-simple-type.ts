@@ -1,4 +1,5 @@
 import { combineIntersectingSimpleTypes } from "./combine-intersecting-simple-types";
+import { isAssignableToSimpleTypeKind } from "./is-assignable-to-simple-type-kind";
 import { isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleTypeGenericArguments, SimpleTypeKind } from "./simple-type";
 import { SimpleTypeComparisonOptions } from "./simple-type-comparison-options";
 import { getTupleLengthType } from "./simple-type-util";
@@ -35,25 +36,30 @@ interface IsAssignableToSimpleTypeOptions {
 }
 
 function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeOptions): boolean {
-	/**/
+	/**
 	options = { ...options };
 	(options as any).depth = ((options as any).depth || 0) + 1;
-	//console.log("###", "\t".repeat((options as any).depth), simpleTypeToString(typeA), "===", simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###");
-	//if ((options as any).depth > 10) return false;
-	console.log(
-		"###",
-		"\t".repeat((options as any).depth),
-		require("./simple-type-to-string").simpleTypeToString(typeA),
-		"===",
-		require("./simple-type-to-string").simpleTypeToString(typeB),
-		"(",
-		typeA.kind,
-		"===",
-		typeB.kind,
-		")",
-		(options as any).depth,
-		"###"
-	);
+	if ((options as any).depth > 200) {
+		return true;
+	}
+	if ((options as any).depth > 150) {
+		//console.log("###", "\t".repeat((options as any).depth), simpleTypeToString(typeA), "===", simpleTypeToString(typeB), "(", typeA.kind, "===", typeB.kind, ")", (options as any).depth, "###");
+		//if ((options as any).depth > 10) return false;
+		console.log(
+			"###",
+			"\t".repeat((options as any).depth),
+			require("./simple-type-to-string").simpleTypeToString(typeA),
+			"===",
+			require("./simple-type-to-string").simpleTypeToString(typeB),
+			"(",
+			typeA.kind,
+			"===",
+			typeB.kind,
+			")",
+			(options as any).depth,
+			"###"
+		);
+	}
 	/**/
 
 	if (typeA === typeB) {
@@ -100,11 +106,12 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 			return true;
 
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
-			return isAssignableToSimpleTypeInternal(typeA, typeB.ref, {
+			return true;
+		/*return isAssignableToSimpleTypeInternal(typeA, typeB.ref, {
 				...options,
 				inCircularB: true,
 				insideType: new Set([...options.insideType, typeB])
-			});
+			});*/
 		case SimpleTypeKind.ENUM_MEMBER:
 			return isAssignableToSimpleTypeInternal(typeA, typeB.type, options);
 		case SimpleTypeKind.ENUM:
@@ -112,10 +119,13 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.UNION:
 			return and(typeB.types, childTypeB => isAssignableToSimpleTypeInternal(typeA, childTypeB, options));
 		case SimpleTypeKind.INTERSECTION: {
-			const combinedIntersectionType = combineIntersectingSimpleTypes(typeB.types);
+			// If we compare an intersection against an intersection, we need to compare from typeA and not typeB
+			// Example: [string, number] & [string] === [string, number] & [string]
+			if (typeA.kind === SimpleTypeKind.INTERSECTION) {
+				break;
+			}
 
-			console.log(`combined`);
-			console.dir(combinedIntersectionType, { depth: null });
+			const combinedIntersectionType = combineIntersectingSimpleTypes(typeB.types);
 
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
 				return or(combinedIntersectionType.types, memberB => isAssignableToSimpleTypeInternal(typeA, memberB, options));
@@ -143,10 +153,10 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 		case SimpleTypeKind.UNDEFINED:
 		case SimpleTypeKind.NULL: {
-			// When strict null checks are turned off, "undefined" and "null" are in the domain of every type
+			// When strict null checks are turned off, "undefined" and "null" are in the domain of every type but never
 			const strictNullChecks = options.config.strictNullChecks === true || (options.config.strictNullChecks == null && options.config.strict);
 			if (!strictNullChecks) {
-				return true;
+				return typeA.kind !== SimpleTypeKind.NEVER;
 			}
 			break;
 		}
@@ -155,11 +165,12 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	switch (typeA.kind) {
 		// Circular references
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
-			return isAssignableToSimpleTypeInternal(typeA.ref, typeB, {
+			return true;
+		/*return isAssignableToSimpleTypeInternal(typeA.ref, typeB, {
 				...options,
 				inCircularA: true,
 				insideType: new Set([...options.insideType, typeA])
-			});
+			});*/
 
 		// Literals and enum members
 		case SimpleTypeKind.NUMBER_LITERAL:
@@ -303,8 +314,6 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		// Intersections
 		case SimpleTypeKind.INTERSECTION: {
 			const combinedIntersectionType = combineIntersectingSimpleTypes(typeA.types);
-			console.log(`combined`);
-			console.dir(combinedIntersectionType, { depth: null });
 
 			if (combinedIntersectionType.kind === SimpleTypeKind.INTERSECTION) {
 				return and(combinedIntersectionType.types, memberA => isAssignableToSimpleTypeInternal(memberA, typeB, options));
@@ -317,17 +326,12 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.INTERFACE:
 		case SimpleTypeKind.OBJECT:
 		case SimpleTypeKind.CLASS: {
-			// If there are no members check that "typeB" is not assignable to 'null' and 'undefined'.
-			// Here we allow assigning anything but 'null' and 'undefined' to the type '{}'
+			// If there are no members check that "typeB" is not assignable to a set of incompatible type kinds
 			if ("members" in typeA && (typeA.members == null || typeA.members.length === 0)) {
-				return !isAssignableToSimpleTypeInternal(
-					{
-						kind: SimpleTypeKind.UNION,
-						types: [{ kind: SimpleTypeKind.NULL }, { kind: SimpleTypeKind.UNDEFINED }]
-					},
-					typeB,
-					options
-				);
+				return !isAssignableToSimpleTypeKind(typeB, [SimpleTypeKind.NULL, SimpleTypeKind.UNDEFINED, SimpleTypeKind.NEVER, SimpleTypeKind.VOID, SimpleTypeKind.UNKNOWN], {
+					op: "or",
+					matchAny: false
+				});
 			}
 
 			switch (typeB.kind) {
@@ -349,12 +353,10 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 							return memberB == null ? memberA.optional : true;
 						}) &&
 						and(membersB, memberB => {
-							// Do not allow new props in subtype: contravariance
+							// Ensure that every member in typeB is assignable to corresponding members in typeA
 							const memberA = membersA.find(memberA => memberA.name === memberB.name);
 							if (memberA == null) {
-								// If we find a member in typeB which isn't in typeA, allow it if both typeA and typeB are object
-								//return typeA.kind === SimpleTypeKind.OBJECT && typeB.kind === SimpleTypeKind.OBJECT;
-								return typeA.kind === typeB.kind;
+								return true;
 							}
 							return isAssignableToSimpleTypeInternal(memberA.type, memberB.type, newOptions);
 						})
@@ -368,13 +370,21 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.TUPLE: {
 			if (typeB.kind !== SimpleTypeKind.TUPLE) return false;
 
-			console.log(getTupleLengthType(typeA), getTupleLengthType(typeB));
+			// Compare the length of each tuple, but compare the length type instead of the actual length
+			// We compare the length type because Typescript compares the type of the "length" member of tuples
 			if (!isAssignableToSimpleTypeInternal(getTupleLengthType(typeA), getTupleLengthType(typeB), options)) {
-				console.log(`- not assignable`);
 				return false;
 			}
-			console.log(`- assignable`);
 
+			// Compare if typeB elements are assignable to typeA's rest element
+			// Example: [string, ...boolean[]] === [any, true, 123]
+			if (typeA.hasRestElement && typeB.members.length > typeA.members.length) {
+				return and(typeB.members.slice(typeA.members.length), (memberB, i) => {
+					return isAssignableToSimpleTypeInternal(typeA.members[typeA.members.length - 1].type, memberB.type, options);
+				});
+			}
+
+			// Compare that every type of typeB is assignable to corresponding members in typeA
 			return and(typeA.members, (memberA, i) => {
 				const memberB = typeB.members[i];
 				if (memberB == null) return memberA.optional;

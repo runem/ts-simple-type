@@ -1,11 +1,8 @@
 import { Declaration, Node, Symbol, Type, TypeChecker } from "typescript";
 import {
 	isImplicitGenericType,
-	isSimpleTypeLiteral,
-	PRIMITIVE_TYPE_KINDS,
 	SimpleType,
 	SimpleTypeAlias,
-	SimpleTypeBooleanLiteral,
 	SimpleTypeClassMember,
 	SimpleTypeEnumMember,
 	SimpleTypeFunction,
@@ -15,10 +12,9 @@ import {
 	SimpleTypeKind,
 	SimpleTypeLiteral,
 	SimpleTypeMethod,
-	SimpleTypeNull,
-	SimpleTypeObject,
-	SimpleTypeUndefined
+	SimpleTypeObject
 } from "./simple-type";
+import { simplifySimpleTypes } from "./simple-type-util";
 import { tsModule } from "./ts-module";
 import {
 	getDeclaration,
@@ -244,13 +240,13 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 	else if (type.isUnion()) {
 		return {
 			kind: SimpleTypeKind.UNION,
-			types: simplifySimpleTypeArray(type.types.map(t => toSimpleTypeInternalCaching(t, options))),
+			types: simplifySimpleTypes(type.types.map(t => toSimpleTypeInternalCaching(t, options))),
 			name
 		};
 	} else if (type.isIntersection()) {
 		return {
 			kind: SimpleTypeKind.INTERSECTION,
-			types: simplifySimpleTypeArray(type.types.map(t => toSimpleTypeInternalCaching(t, options))),
+			types: simplifySimpleTypes(type.types.map(t => toSimpleTypeInternalCaching(t, options))),
 			name
 		};
 	}
@@ -403,42 +399,6 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 		kind: SimpleTypeKind.ANY,
 		name
 	};
-}
-
-function simplifySimpleTypeArray(types: SimpleType[]): SimpleType[] {
-	let newTypes: SimpleType[] = [...types];
-	const NULLABLE_TYPE_KINDS = [SimpleTypeKind.UNDEFINED, SimpleTypeKind.NULL];
-
-	// Only include one instance of primitives
-	newTypes = newTypes.filter((type, i) => {
-		if (isSimpleTypeLiteral(type)) return true;
-		if (PRIMITIVE_TYPE_KINDS.includes(type.kind) || NULLABLE_TYPE_KINDS.includes(type.kind)) {
-			// Remove this type from the array if there is already a primitive in the array
-			return !newTypes
-				.slice(0, i)
-				.map(t => t.kind)
-				.includes(type.kind);
-		}
-
-		return true;
-	});
-
-	// Simplify boolean literals
-	const booleanLiteralTypes = newTypes.filter((t): t is SimpleTypeBooleanLiteral => t.kind === SimpleTypeKind.BOOLEAN_LITERAL);
-	if (booleanLiteralTypes.find(t => t.value === true) != null && booleanLiteralTypes.find(t => t.value === false) != null) {
-		newTypes = [...newTypes.filter(type => type.kind !== SimpleTypeKind.BOOLEAN_LITERAL), { kind: SimpleTypeKind.BOOLEAN }];
-	}
-
-	// Reorder "NULL" and "UNDEFINED" to be last
-	const nullableTypes = newTypes.filter((t): t is SimpleTypeUndefined | SimpleTypeNull => NULLABLE_TYPE_KINDS.includes(t.kind));
-	if (nullableTypes.length > 0) {
-		newTypes = [
-			...newTypes.filter(t => !NULLABLE_TYPE_KINDS.includes(t.kind)),
-			...nullableTypes.sort((t1, t2) => (t1.kind === SimpleTypeKind.NULL ? (t2.kind === SimpleTypeKind.UNDEFINED ? -1 : 0) : t2.kind === SimpleTypeKind.NULL ? 1 : 0))
-		];
-	}
-
-	return newTypes;
 }
 
 function literalToSimpleType(type: Type, checker: TypeChecker): SimpleTypeLiteral | undefined {

@@ -131,7 +131,6 @@ export interface SimpleTypeTuple extends SimpleTypeBase {
 	kind: SimpleTypeKind.TUPLE;
 	members: SimpleTypeMember[];
 	hasRestElement?: boolean;
-	lengthType?: SimpleType;
 }
 
 export interface SimpleTypeArray extends SimpleTypeBase {
@@ -299,6 +298,13 @@ export const PRIMITIVE_TYPE_TO_LITERAL_MAP = ({
 	[SimpleTypeKind.NUMBER]: SimpleTypeKind.NUMBER_LITERAL,
 	[SimpleTypeKind.BOOLEAN]: SimpleTypeKind.BOOLEAN_LITERAL,
 	[SimpleTypeKind.BIG_INT]: SimpleTypeKind.BIG_INT_LITERAL
+} as unknown) as Record<SimpleTypeKind, SimpleTypeKind | undefined>;
+
+export const LITERAL_TYPE_TO_PRIMITIVE_TYPE_MAP = ({
+	[SimpleTypeKind.STRING_LITERAL]: SimpleTypeKind.STRING,
+	[SimpleTypeKind.NUMBER_LITERAL]: SimpleTypeKind.NUMBER,
+	[SimpleTypeKind.BOOLEAN_LITERAL]: SimpleTypeKind.BOOLEAN,
+	[SimpleTypeKind.BIG_INT_LITERAL]: SimpleTypeKind.BIG_INT
 } as unknown) as Record<SimpleTypeKind, SimpleTypeKind | undefined>;
 
 export const IMPLICIT_GENERIC = [SimpleTypeKind.ARRAY, SimpleTypeKind.TUPLE, SimpleTypeKind.PROMISE];
