@@ -1,12 +1,23 @@
 import { CompilerOptions, Diagnostic, getPreEmitDiagnostics, isBinaryExpression, isVariableDeclaration, Node, Program, SyntaxKind, Type, TypeChecker } from "typescript";
 import { programWithVirtualFiles } from "./analyze-text";
+import { generateCombinedTypeTestCode } from "./generate-combined-type-test-code";
+import { TypescriptType } from "./type-test";
+
+const INVALID_DIAGNOSTIC_CODES = [
+	2322, // typeB is not assignable to typeA (general)
+	2559, // typeB has no properties in common with typeA
+	2560, // typeB has no properties in common with typeA (did you mean to call it?)
+	2739, // typeB is missing the following properties from typeA
+	2740, // typeB is missing the following properties, and more from typeA
+	2741 // property is missing in typeB but required in typeA
+];
 
 /**
  * Visits all type comparisons by traversing the AST recursively
  * @param node
  * @param foundAssignment
  */
-function visitComparisons(node: Node, foundAssignment: (options: { line: number; nodeA: Node; nodeB: Node }) => void): void {
+function visitNodeComparisons(node: Node, foundAssignment: (options: { line: number; nodeA: Node; nodeB: Node }) => void): void {
 	if (isVariableDeclaration(node) && node.initializer != null) {
 		const line = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line;
 		foundAssignment({ line, nodeA: node, nodeB: node.initializer });
@@ -15,7 +26,7 @@ function visitComparisons(node: Node, foundAssignment: (options: { line: number;
 		foundAssignment({ line, nodeA: node.left, nodeB: node.right });
 	}
 
-	node.forEachChild(child => visitComparisons(child, foundAssignment));
+	node.forEachChild(child => visitNodeComparisons(child, foundAssignment));
 }
 
 /**
@@ -24,7 +35,7 @@ function visitComparisons(node: Node, foundAssignment: (options: { line: number;
  * @param diagnostics
  */
 function hasValidAssignmentOnLine(line: number, diagnostics: ReadonlyArray<Diagnostic>): boolean {
-	return !diagnostics.some(diagnostic => diagnostic.file && diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!).line === line && [2322, 2741, 2740, 2739].includes(diagnostic.code));
+	return !diagnostics.some(diagnostic => diagnostic.file && diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!).line === line && INVALID_DIAGNOSTIC_CODES.includes(diagnostic.code));
 }
 
 export type VisitComparisonInTestCodeOptions = {
@@ -44,7 +55,7 @@ export type VisitComparisonInTestCodeOptions = {
  * @param callback
  * @param compilerOptions
  */
-export function visitComparisonsInTestCode(testCode: string, callback: (options: VisitComparisonInTestCodeOptions) => void, compilerOptions: CompilerOptions = {}) {
+export function visitComparisonsInTestCode(testCode: string, compilerOptions: CompilerOptions, callback: (options: VisitComparisonInTestCodeOptions) => void) {
 	const program = programWithVirtualFiles(testCode, { options: compilerOptions, includeLib: true });
 
 	const [sourceFile] = program.getSourceFiles().filter(f => !f.fileName.includes("node_modules"));
@@ -54,7 +65,7 @@ export function visitComparisonsInTestCode(testCode: string, callback: (options:
 
 	const checker = program.getTypeChecker();
 
-	visitComparisons(sourceFile, ({ line, nodeA, nodeB }) => {
+	visitNodeComparisons(sourceFile, ({ line, nodeA, nodeB }) => {
 		const typeA = checker.getTypeAtLocation(nodeA);
 		const typeB = checker.getTypeAtLocation(nodeB);
 
@@ -65,4 +76,9 @@ export function visitComparisonsInTestCode(testCode: string, callback: (options:
 
 		callback({ line, typeA, typeB, typeAString, typeBString, program, checker, assignable });
 	});
+}
+
+export function visitTypeComparisons(typesX: TypescriptType[], typesY: TypescriptType[], compilerOptions: CompilerOptions, callback: (options: VisitComparisonInTestCodeOptions) => void): void {
+	const testCode = generateCombinedTypeTestCode(typesX, typesY);
+	visitComparisonsInTestCode(testCode, compilerOptions, callback);
 }

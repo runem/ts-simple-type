@@ -25,9 +25,13 @@ type MyCircularType = MyCircularInterface3 | string;
 { const _: MyCircularInterface4<string> = {} as MyCircularInterface4<number>; }
 { const _: MyCircularInterface1 = {} as MyCircularInterface1; }
 { const _: ts.Node = {} as MyCircularInterface1; }
-//{ const _: EventTarget = {} as HTMLElement; }
+
+{ const _: EventTarget = {} as HTMLElement; }
+
 //{ const _: (typeof EventTarget["prototype"]["addEventListener"]) = {} as (typeof HTMLElement["prototype"]["addEventListener"]) }
 { const _: (typeof HTMLElement["prototype"]["addEventListener"]) = {} as (typeof HTMLElement["prototype"]["addEventListener"]) }
+{ const _: EventListenerOrEventListenerObject = {} as (typeof HTMLElement["prototype"]["addEventListener"]) }
+
 { const _: ChildNode = {}; }
 { const _: HTMLElement = {}; }
 { const _: MyCircularType = {} as MyCircularInterface3; }
@@ -46,6 +50,8 @@ type MyCircularType = MyCircularInterface3 | string;
 { const _: EventListenerOrEventListenerObject = {} as EventListenerOrEventListenerObject; }
 { const _: AssignedNodesOptions = {} as AssignedNodesOptions; }
 
+{ const _: AssignedNodesOptions = {} as (typeof HTMLElement["prototype"]["addEventListener"]); }
+
 interface CircularA {
 	b: CircularB;
 }
@@ -61,6 +67,12 @@ interface CircularB {
 { const _: CircularA = {} as any as CircularA; }
 { const _: CircularA | number = {} as any as CircularA | number; }
 { const _: CircularA = 123; }
+
+{ const _: { a: string; } = {} as { a: string; b: number; } }
+{ const _: { a?: string; } = {} as { a: string; bsdlfkj: number; } }
+{ const _: { a?: string; lskjdf?: string } = {} as { hello: string } }
+{ const _: { a?: string; lskjdf?: string } = {} as { } }
+{ const _: { a?: string; } = {} as (this: string, a: number) => any }
 
 // Circular generics
 export interface InterfaceWithRecursiveGenericB<T extends string, F> {

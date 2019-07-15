@@ -26,7 +26,7 @@ export const ARRAY_TYPES: TypescriptType[] = [
 	`{ foo: string, bar: number }[];`
 ];
 
-export const OBJECT_TYPES: TypescriptType[] = [`{}`, `{a: string}`, `{a: string, b: number}`, `{a: number}`, `{ foo: "", bar: true }`];
+export const OBJECT_TYPES: TypescriptType[] = [`{}`, `{a: string}`, `{a: string, b: number}`, `{a: number}`, `{ foo: "", bar: true }`, `{a?: number | string}`];
 
 export const INTERFACE_TYPES: TypescriptType[] = [
 	{
@@ -57,7 +57,7 @@ export const INTERSECTION_TYPES: TypescriptType[] = [
 	`[string, number] & [string]`
 ];
 
-export const EXTRA_TYPES: TypescriptType[] = [`Date`, `Promise<string>`, `Promise<number>` /*, `HTMLElement`, `Element`*/];
+export const EXTRA_TYPES: TypescriptType[] = [`Date`, `Promise<string>`, `Promise<number>`, `PathLike`];
 
 export const TYPE_ALIAS_TYPES: TypescriptType[] = [
 	{

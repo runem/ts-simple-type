@@ -1,6 +1,6 @@
 import { combineIntersectingSimpleTypes } from "./combine-intersecting-simple-types";
 import { isAssignableToSimpleTypeKind } from "./is-assignable-to-simple-type-kind";
-import { isSimpleTypeLiteral, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleTypeGenericArguments, SimpleTypeKind } from "./simple-type";
+import { isSimpleTypeLiteral, isSimpleTypePrimitive, PRIMITIVE_TYPE_TO_LITERAL_MAP, SimpleType, SimpleTypeGenericArguments, SimpleTypeKind } from "./simple-type";
 import { SimpleTypeComparisonOptions } from "./simple-type-comparison-options";
 import { getTupleLengthType } from "./simple-type-util";
 import { and, or } from "./util";
@@ -18,9 +18,8 @@ const DEFAULT_CONFIG: SimpleTypeComparisonOptions = {
 export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, config: SimpleTypeComparisonOptions = DEFAULT_CONFIG): boolean {
 	return isAssignableToSimpleTypeInternal(typeA, typeB, {
 		config,
-		inCircularA: false,
-		inCircularB: false,
 		insideType: new Set(),
+		comparingTypes: new Map(),
 		genericParameterMapA: new Map(),
 		genericParameterMapB: new Map()
 	});
@@ -28,9 +27,8 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, c
 
 interface IsAssignableToSimpleTypeOptions {
 	config: SimpleTypeComparisonOptions;
-	inCircularA: boolean;
-	inCircularB: boolean;
 	insideType: Set<SimpleType>;
+	comparingTypes: Map<SimpleType, Set<SimpleType>>;
 	genericParameterMapA: Map<string, SimpleType>;
 	genericParameterMapB: Map<string, SimpleType>;
 }
@@ -66,13 +64,16 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		return true;
 	}
 
-	// We might need a better way of handling refs, but these check are good for now
-	if (options.insideType.has(typeA) || options.insideType.has(typeB)) {
-		return true;
+	// When comparing types S and T, the relationship in question is assumed to be true
+	//   for every directly or indirectly nested occurrence of the same S and the same T
+	if (options.comparingTypes.has(typeA)) {
+		if (options.comparingTypes.get(typeA)!.has(typeB)) {
+			return true;
+		}
 	}
 
-	// Circular types
-	if (options.inCircularA || options.inCircularB) {
+	// We might need a better way of handling refs, but these check are good for now
+	if (options.insideType.has(typeA) || options.insideType.has(typeB)) {
 		return true;
 	}
 
@@ -96,6 +97,18 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		return true;
 	}
 
+	// Mutate options and add this comparison to "comparingTypes".
+	// Only do this if one of the types is not a primitive to save memory.
+	if (!isSimpleTypePrimitive(typeA) || !isSimpleTypePrimitive(typeB)) {
+		options = { ...options };
+		options.comparingTypes = new Map(options.comparingTypes);
+		if (options.comparingTypes.has(typeA)) {
+			options.comparingTypes.get(typeA)!.add(typeB);
+		} else {
+			options.comparingTypes.set(typeA, new Set([typeB]));
+		}
+	}
+
 	switch (typeB.kind) {
 		case SimpleTypeKind.ANY:
 			// "any" can be assigned to anything but "never"
@@ -107,11 +120,6 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
 			return true;
-		/*return isAssignableToSimpleTypeInternal(typeA, typeB.ref, {
-				...options,
-				inCircularB: true,
-				insideType: new Set([...options.insideType, typeB])
-			});*/
 		case SimpleTypeKind.ENUM_MEMBER:
 			return isAssignableToSimpleTypeInternal(typeA, typeB.type, options);
 		case SimpleTypeKind.ENUM:
@@ -166,11 +174,6 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		// Circular references
 		case SimpleTypeKind.CIRCULAR_TYPE_REF:
 			return true;
-		/*return isAssignableToSimpleTypeInternal(typeA.ref, typeB, {
-				...options,
-				inCircularA: true,
-				insideType: new Set([...options.insideType, typeA])
-			});*/
 
 		// Literals and enum members
 		case SimpleTypeKind.NUMBER_LITERAL:
@@ -180,8 +183,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 			return isSimpleTypeLiteral(typeB) ? typeA.value === typeB.value : false;
 
 		case SimpleTypeKind.ENUM_MEMBER:
-			// There exists an interesting rule that you can always assign a "number" or any "number literal" to a "number literal"
-			//   when the "number literal" is from an enum member type.
+			// You can always assign a "number" | "number literal" to a "number literal" enum member type.
 			if (typeA.type.kind === SimpleTypeKind.NUMBER_LITERAL && [SimpleTypeKind.NUMBER, SimpleTypeKind.NUMBER_LITERAL].includes(typeB.kind)) {
 				return true;
 			}
@@ -346,12 +348,18 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 						insideType: new Set([...options.insideType, typeA, typeB])
 					};
 
+					// Check how many properties typeB has in common with typeA.
+					// They are not assignable if typeB has 0 properties in common with typeA, and there are more than 0 properties in typeB.
+					let propertiesInCommon = 0;
+
 					return (
 						and(membersA, memberA => {
 							// Make sure that every required prop in typeA is present
 							const memberB = membersB.find(memberB => memberA.name === memberB.name);
+							if (memberB != null) propertiesInCommon += 1;
 							return memberB == null ? memberA.optional : true;
 						}) &&
+						(propertiesInCommon > 0 || membersB.length === 0) &&
 						and(membersB, memberB => {
 							// Ensure that every member in typeB is assignable to corresponding members in typeA
 							const memberA = membersA.find(memberA => memberA.name === memberB.name);
