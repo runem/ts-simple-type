@@ -142,9 +142,9 @@ export function isMethod(type: Type): type is TypeReference {
 }
 
 export function getDeclaration(symbol: Symbol): Declaration | undefined {
-	// Note: Somehow "symbol.declarations" can be undefined under some circumstances
-	if (symbol.declarations == null) return undefined;
-	return symbol.declarations.length > 0 ? symbol.declarations[0] : symbol.valueDeclaration;
+	const declarations = symbol.getDeclarations();
+	if (declarations == null || declarations.length === 0) return symbol.valueDeclaration;
+	return declarations[0];
 }
 
 export function isArray(type: Type): type is TypeReference {
