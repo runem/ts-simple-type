@@ -103,7 +103,7 @@ function toSimpleTypeInternalCaching(type: Type, options: ToSimpleTypeOptions): 
 	const simpleTypeOverwrite = toSimpleTypeInternal(type, options);
 
 	// Strip undefined keys to make the output cleaner
-	Object.entries<unknown>(simpleTypeOverwrite).forEach(([k, v]) => {
+	Object.entries<any>(simpleTypeOverwrite).forEach(([k, v]) => {
 		if (v == null) delete simpleTypeOverwrite[k as keyof typeof simpleTypeOverwrite];
 	});
 
