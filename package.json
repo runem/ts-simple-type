@@ -50,7 +50,7 @@
 		"prettier": "^1.15.3",
 		"pretty-quick": "^1.8.0",
 		"rimraf": "^2.6.3",
-		"rollup": "^0.67.4",
+		"rollup": "^1.17.0",
 		"standard-version": "^4.4.0",
 		"typescript": "^3.4.0"
 	},
