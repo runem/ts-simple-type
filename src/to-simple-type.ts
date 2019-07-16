@@ -334,24 +334,24 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 
 			const members = checker
 				.getPropertiesOfType(type)
-				.filter(symbol => {
-					// Instance properties from class mixins may have an undefined
-					// valueDeclaration.
-					// Since we can't do too much without a value declaration, filtering
+				.map(symbol => {
+					const declaration = getDeclaration(symbol);
+
+					// Some instance properties may have an undefined declaration.
+					// Since we can't do too much without a declaration, filtering
 					// these out seems like the best strategy for the moment.
 					//
 					// See https://github.com/runem/web-component-analyzer/issues/60 for
 					// more info.
-					return symbol.valueDeclaration != null;
+					if (declaration == null) return null;
+
+					return {
+						name: symbol.name,
+						modifiers: getModifiersFromDeclaration(declaration),
+						type: toSimpleTypeInternalCaching(checker.getTypeAtLocation(declaration), options)
+					} as SimpleTypeClassMember;
 				})
-				.map(
-					symbol =>
-						({
-							name: symbol.name,
-							modifiers: getModifiersFromDeclaration(symbol.valueDeclaration),
-							type: toSimpleTypeInternalCaching(checker.getTypeAtLocation(symbol.valueDeclaration), options)
-						} as SimpleTypeClassMember)
-				);
+				.filter((member): member is NonNullable<typeof member> => member != null);
 
 			const typeParameters = getTypeParameters(getDeclaration(symbol), options);
 
