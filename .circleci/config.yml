@@ -16,21 +16,21 @@ jobs:
             # Download and cache dependencies
             - restore_cache:
                   keys:
-                      - v1-dependencies-{{ checksum "package.json" }}
+                      - v2-dependencies-{{ checksum "package.json" }}
                       # fallback to using the latest cache if no exact match is found
-                      - v1-dependencies-
+                      - v2-dependencies-
 
             - run: npm install
 
             - save_cache:
                   paths:
                       - node_modules
-                  key: v1-dependencies-{{ checksum "package.json" }}
+                  key: v2-dependencies-{{ checksum "package.json" }}
 
             # Restore the dist cache (for incremental builds)
             - restore_cache:
                   keys:
-                      - dist-v1-{{ .Branch }}
+                      - dist-v2-{{ .Branch }}
 
             # run tests!
             - run: npm test
@@ -39,4 +39,4 @@ jobs:
             - save_cache:
                   paths:
                       - dist
-                  key: dist-v1-{{ .Branch }}-{{ epoch }}
+                  key: dist-v2-{{ .Branch }}-{{ epoch }}
