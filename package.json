@@ -51,7 +51,7 @@
 		"pretty-quick": "^1.8.0",
 		"rimraf": "^2.6.3",
 		"rollup": "^1.17.0",
-		"standard-version": "^4.4.0",
+		"standard-version": "^7.0.0",
 		"typescript": "^3.4.0"
 	},
 	"husky": {
