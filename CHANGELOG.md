@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.3.6"></a>
+
+## [0.3.6](https://github.com/runem/ts-simple-type/compare/v0.3.5...v0.3.6) (2019-08-17)
+
+### Features
+
+-   make it possible to overwrite type checking logic by running user defined code when comparing types ([5a5e376](https://github.com/runem/ts-simple-type/commit/5a5e376))
+
 <a name="0.3.5"></a>
 
 ## [0.3.5](https://github.com/runem/ts-simple-type/compare/v0.3.4...v0.3.5) (2019-07-16)
