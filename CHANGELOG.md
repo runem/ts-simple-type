@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
--   make it possible to overwrite type checking logic by running user defined code when comparing types ([5a5e376](https://github.com/runem/ts-simple-type/commit/5a5e376))
+-   Make it possible to overwrite type checking logic by running user defined code when comparing types ([5a5e376](https://github.com/runem/ts-simple-type/commit/5a5e376))
 
 <a name="0.3.5"></a>
 
