@@ -37,7 +37,7 @@ export function isAssignableToType(
 	const checker = isTypeChecker(checkerOrOptions) ? checkerOrOptions : isProgram(checkerOrOptions) ? checkerOrOptions.getTypeChecker() : undefined;
 
 	// Get the correct options
-	options = options || (isTypeChecker(checkerOrOptions) ? undefined : isProgram(checkerOrOptions) ? checkerOrOptions.getCompilerOptions() : checkerOrOptions);
+	options = options || (isTypeChecker(checkerOrOptions) ? undefined : isProgram(checkerOrOptions) ? { ...(options || {}), ...checkerOrOptions.getCompilerOptions() } : checkerOrOptions);
 
 	// Check if the types are nodes (in which case we need to get the type of the node)
 	typeA = isNode(typeA) ? (checker as TypeChecker).getTypeAtLocation(typeA) : typeA;

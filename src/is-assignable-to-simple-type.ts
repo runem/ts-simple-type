@@ -60,6 +60,14 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	}
 	/**/
 
+	// Make it possible to overwrite default behavior by running user defined logic for comparing types
+	if (options.config.isAssignable != null) {
+		const result = options.config.isAssignable(typeA, typeB, options.config);
+		if (result != null) {
+			return result;
+		}
+	}
+
 	if (typeA === typeB) {
 		return true;
 	}
