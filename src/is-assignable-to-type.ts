@@ -36,8 +36,11 @@ export function isAssignableToType(
 	// Get the correct TypeChecker
 	const checker = isTypeChecker(checkerOrOptions) ? checkerOrOptions : isProgram(checkerOrOptions) ? checkerOrOptions.getTypeChecker() : undefined;
 
-	// Get the correct options
-	options = options || (isTypeChecker(checkerOrOptions) ? undefined : isProgram(checkerOrOptions) ? { ...(options || {}), ...checkerOrOptions.getCompilerOptions() } : checkerOrOptions);
+	// Get the correct options. Potentially merge user given options with program options.
+	options = {
+		...(checkerOrOptions == null ? {} : isProgram(checkerOrOptions) ? checkerOrOptions.getCompilerOptions() : isTypeChecker(checkerOrOptions) ? {} : checkerOrOptions),
+		...(options || {})
+	};
 
 	// Check if the types are nodes (in which case we need to get the type of the node)
 	typeA = isNode(typeA) ? (checker as TypeChecker).getTypeAtLocation(typeA) : typeA;
