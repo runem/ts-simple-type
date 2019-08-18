@@ -286,7 +286,8 @@ export const PRIMITIVE_TYPE_KINDS = [
 	SimpleTypeKind.BOOLEAN,
 	SimpleTypeKind.BIG_INT,
 	SimpleTypeKind.NULL,
-	SimpleTypeKind.UNDEFINED
+	SimpleTypeKind.UNDEFINED,
+	SimpleTypeKind.VOID
 ];
 
 export function isSimpleTypePrimitive(type: SimpleType): type is SimpleTypePrimitive {
