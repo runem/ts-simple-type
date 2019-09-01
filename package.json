@@ -49,7 +49,7 @@
 		"nyc": "^14.1.1",
 		"prettier": "^1.15.3",
 		"pretty-quick": "^1.8.0",
-		"rimraf": "^2.6.3",
+		"rimraf": "^3.0.0",
 		"rollup": "^1.17.0",
 		"standard-version": "^7.0.0",
 		"typescript": "^3.4.0"
