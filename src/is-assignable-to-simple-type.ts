@@ -436,6 +436,5 @@ function extendTypeParameterMap(genericType: SimpleTypeGenericArguments, existin
 		return new Map(allParameterEntries);
 	}
 
-	throw new Error(`Couldn't find 'typeParameter' for type '${genericType.target.kind}'`);
-	//return existingMap;
+	return existingMap;
 }
