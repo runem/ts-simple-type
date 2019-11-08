@@ -421,6 +421,7 @@ function literalToSimpleType(type: Type, checker: TypeChecker): SimpleTypeLitera
 	} else if (isBigIntLiteral(type)) {
 		return {
 			kind: SimpleTypeKind.BIG_INT_LITERAL,
+			/* global BigInt */
 			value: BigInt(`${type.value.negative ? "-" : ""}${type.value.base10Value}`)
 		};
 	}

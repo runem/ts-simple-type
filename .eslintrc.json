@@ -11,7 +11,28 @@
 	"parser": "@typescript-eslint/parser",
 	"plugins": ["@typescript-eslint"],
 	"rules": {
+		"no-prototype-builtins": "off",
+		"no-constant-condition": "off",
+		"no-extra-boolean-cast": "off",
+		"no-fallthrough": "off",
+		"getter-return": "off",
+		"require-atomic-updates": "off",
+		"no-dupe-class-members": "off",
+		"no-async-promise-executor": "off",
 		"@typescript-eslint/no-use-before-define": "off",
-		"@typescript-eslint/explicit-function-return-type": "off"
+		"@typescript-eslint/explicit-function-return-type": "off",
+		"@typescript-eslint/no-object-literal-type-assertion": "off",
+		"@typescript-eslint/explicit-member-accessibility": "off",
+		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/prefer-interface": "off",
+		"@typescript-eslint/no-parameter-properties": "off",
+		"@typescript-eslint/interface-name-prefix": "off",
+		"@typescript-eslint/no-non-null-assertion": "off",
+		"@typescript-eslint/no-triple-slash-reference": "off",
+		"@typescript-eslint/no-empty-interface": "off",
+		"monorepo/no-internal-import": "off",
+		"@typescript-eslint/ban-types": "off",
+		"@typescript-eslint/camelcase": "off",
+		"@typescript-eslint/no-unused-vars": "off"
 	}
 }
