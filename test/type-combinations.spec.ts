@@ -26,7 +26,7 @@ export const ARRAY_TYPES: TypescriptType[] = [
 	`{ foo: string, bar: number }[];`
 ];
 
-export const OBJECT_TYPES: TypescriptType[] = [`{}`, `{a: string}`, `{a: string, b: number}`, `{a: number}`, `{ foo: "", bar: true }`, `{a?: number | string}`];
+export const OBJECT_TYPES: TypescriptType[] = [/*`object`, */ `{}`, `{a: string}`, `{a: string, b: number}`, `{a: number}`, `{ foo: "", bar: true }`, `{a?: number | string}`];
 
 export const INTERFACE_TYPES: TypescriptType[] = [
 	{
