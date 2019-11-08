@@ -1,8 +1,14 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file.
 
-<a name="0.3.6"></a>
+## [0.3.7] - 2019-11-08
+
+### Fixed
+
+-   Fix breaking API changes in Typescript 3.7 ([741c837e](https://github.com/runem/ts-simple-type/commit/741c837e4a915fcb42526b5fa5551e7002b8a6e0))
+-   Relax check in extendTypeParameterMap ([f5da8437](https://github.com/runem/ts-simple-type/commit/f5da8437afe95ce2d05c21f854ab201761832d68))
+-   Add 'void' to 'PRIMITIVE_TYPE_KINDS' because it represents 'undefined' ([ad5c7bcf](https://github.com/runem/ts-simple-type/commit/ad5c7bcf894097f670e13090f1c11114961d5736))
 
 ## [0.3.6](https://github.com/runem/ts-simple-type/compare/v0.3.5...v0.3.6) (2019-08-17)
 
