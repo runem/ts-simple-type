@@ -4,7 +4,6 @@
 <a href="https://www.npmjs.com/package/ts-simple-type"><img alt="NPM Version" src="https://badge.fury.io/js/ts-simple-type.svg" height="20"></img></a>
 <a href="https://github.com/runem/ts-simple-type/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/runem/ts-simple-type.svg" height="20"></img></a>
 <a href="https://opensource.org/licenses/MIT"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-yellow.svg" height="20"></img></a>
-[![CircleCI](https://circleci.com/gh/runem/ts-simple-type.svg?style=svg)](https://circleci.com/gh/runem/ts-simple-type)
 
 ## What is this?
 
