@@ -26,6 +26,13 @@ export const ARRAY_TYPES: TypescriptType[] = [
 	`{ foo: string, bar: number }[];`
 ];
 
+export const CLASS_TYPES: TypescriptType[] = [
+	{
+		setup: "class EmptyClass {}",
+		type: "EmptyClass"
+	}
+];
+
 export const OBJECT_TYPES: TypescriptType[] = [/*`object`, */ `{}`, `{a: string}`, `{a: string, b: number}`, `{a: number}`, `{ foo: "", bar: true }`, `{a?: number | string}`];
 
 export const INTERFACE_TYPES: TypescriptType[] = [
@@ -114,7 +121,8 @@ export const ALL_TYPES: TypescriptType[] = [
 	...FUNCTION_THIS_TYPES,
 	...UNION_TYPES,
 	...INTERSECTION_TYPES,
-	...EXTRA_TYPES
+	...EXTRA_TYPES,
+	...CLASS_TYPES
 ];
 
 const A_TYPES = process.env.TYPEA == null ? ALL_TYPES : process.env.TYPEA.split(";");

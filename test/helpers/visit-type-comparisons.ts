@@ -34,11 +34,11 @@ function visitNodeComparisons(node: Node, foundAssignment: (options: { line: num
  * @param line
  * @param diagnostics
  */
-function hasValidAssignmentOnLine(line: number, diagnostics: ReadonlyArray<Diagnostic>): boolean {
+function hasValidAssignmentOnLine(line: number, diagnostics: readonly Diagnostic[]): boolean {
 	return !diagnostics.some(diagnostic => diagnostic.file && diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!).line === line && INVALID_DIAGNOSTIC_CODES.includes(diagnostic.code));
 }
 
-export type VisitComparisonInTestCodeOptions = {
+export interface VisitComparisonInTestCodeOptions {
 	line: number;
 	typeA: Type;
 	typeB: Type;
@@ -47,7 +47,7 @@ export type VisitComparisonInTestCodeOptions = {
 	typeBString: string;
 	checker: TypeChecker;
 	assignable: boolean;
-};
+}
 
 /**
  * Visits all type comparisons and emits them through the callback

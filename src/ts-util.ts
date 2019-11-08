@@ -147,19 +147,19 @@ export function getDeclaration(symbol: Symbol): Declaration | undefined {
 	return declarations[0];
 }
 
-export function isArray(type: Type): type is TypeReference {
+export function isArray(type: Type, checker: TypeChecker): type is TypeReference {
 	if (!isObject(type)) return false;
 	const symbol = type.getSymbol();
 	if (symbol == null) return false;
-	return getTypeArguments(type).length === 1 && ["ArrayLike", "ReadonlyArray", "Array"].includes(symbol.getName());
+	return getTypeArguments(type, checker).length === 1 && ["ArrayLike", "ReadonlyArray", "Array"].includes(symbol.getName());
 	//return symbol.getName() === "Array"; // && getTypeArguments(type).length === 1;
 }
 
-export function isPromise(type: Type): type is TypeReference {
+export function isPromise(type: Type, checker: TypeChecker): type is TypeReference {
 	if (!isObject(type)) return false;
 	const symbol = type.getSymbol();
 	if (symbol == null) return false;
-	return getTypeArguments(type).length === 1 && ["PromiseLike", "Promise"].includes(symbol.getName());
+	return getTypeArguments(type, checker).length === 1 && ["PromiseLike", "Promise"].includes(symbol.getName());
 }
 
 export function isDate(type: Type): type is ObjectType {
@@ -182,10 +182,14 @@ export function isFunction(type: Type): type is ObjectType {
 	return (symbol.flags & tsModule.ts.SymbolFlags.Function) !== 0 || symbol.escapedName === "Function" || (symbol.members != null && symbol.members.has("__call" as any));
 }
 
-export function getTypeArguments(type: ObjectType): Type[] {
+export function getTypeArguments(type: ObjectType, checker: TypeChecker): Type[] {
 	if (isObject(type)) {
 		if (isObjectTypeReference(type)) {
-			return Array.from(type.typeArguments || []);
+			if ("getTypeArguments" in checker) {
+				return Array.from(checker.getTypeArguments(type) || []);
+			} else {
+				return Array.from(type.typeArguments || []);
+			}
 		}
 	}
 

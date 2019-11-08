@@ -338,7 +338,10 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case SimpleTypeKind.CLASS: {
 			// If there are no members check that "typeB" is not assignable to a set of incompatible type kinds
 			const strictNullChecks = options.config.strictNullChecks == null && options.config.strict;
-			if ("members" in typeA && (typeA.members == null || typeA.members.length === 0 || (!strictNullChecks && !typeA.members.some(m => !m.optional) && typeB.kind === SimpleTypeKind.UNKNOWN))) {
+			const objHasZeroMembers =
+				"members" in typeA && (typeA.members == null || typeA.members.length === 0 || (!strictNullChecks && !typeA.members.some(m => !m.optional) && typeB.kind === SimpleTypeKind.UNKNOWN));
+			const clsHasZeroMembers = typeA.kind === "CLASS" && typeA.properties.length === 0 && typeA.methods.length === 0;
+			if (objHasZeroMembers || clsHasZeroMembers) {
 				return !isAssignableToSimpleTypeKind(
 					typeB,
 					[SimpleTypeKind.NULL, SimpleTypeKind.UNDEFINED, SimpleTypeKind.NEVER, SimpleTypeKind.VOID, ...(strictNullChecks ? [SimpleTypeKind.UNKNOWN] : [])],

@@ -151,7 +151,7 @@ function liftGenericType(simpleType: SimpleType, type: Type, options: ToSimpleTy
 	}
 
 	// Check if the type is a generic interface/class reference and lift it.
-	else if (isObject(type) && isObjectTypeReference(type) && type.typeArguments != null) {
+	else if (isObject(type) && isObjectTypeReference(type) && type.typeArguments != null && type.typeArguments.length > 0) {
 		// Special case for array, tuple and promise, they are generic in themselves
 		if (isImplicitGenericType(simpleType)) {
 			return simpleType;
@@ -228,11 +228,11 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 	}
 
 	// Promise
-	else if (isPromise(type)) {
+	else if (isPromise(type, checker)) {
 		return {
 			kind: SimpleTypeKind.PROMISE,
 			name,
-			type: toSimpleTypeInternalCaching(getTypeArguments(type)[0], options)
+			type: toSimpleTypeInternalCaching(getTypeArguments(type, checker)[0], options)
 		};
 	}
 
@@ -260,14 +260,14 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 	}
 
 	// Array
-	else if (isArray(type)) {
+	else if (isArray(type, checker)) {
 		return {
 			kind: SimpleTypeKind.ARRAY,
-			type: toSimpleTypeInternalCaching(getTypeArguments(type)[0], options),
+			type: toSimpleTypeInternalCaching(getTypeArguments(type, checker)[0], options),
 			name
 		};
 	} else if (isTupleTypeReference(type)) {
-		const types = getTypeArguments(type);
+		const types = getTypeArguments(type, checker);
 
 		const minLength = type.target.minLength;
 
