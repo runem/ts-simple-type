@@ -44,6 +44,8 @@ import {
 	isVoid
 } from "./ts-util";
 
+const defaultCache = new WeakMap<Type, SimpleType>();
+
 /**
  * Converts a Typescript type to a "SimpleType"
  * @param type The type to convert.
@@ -55,13 +57,13 @@ export function toSimpleType(type: Type, checker: TypeChecker, cache?: WeakMap<T
 export function toSimpleType(type: Type | Node, checker: TypeChecker, cache?: WeakMap<Type, SimpleType>): SimpleType {
 	if (isNode(type)) {
 		// "type" is a "Node", convert it to a "Type" and continue.
-		return toSimpleType(checker.getTypeAtLocation(type), checker);
+		return toSimpleType(checker.getTypeAtLocation(type), checker, cache);
 	}
-
+	cache = cache || defaultCache;
 	return toSimpleTypeInternalCaching(type, {
 		checker,
 		circularCache: new WeakMap<Type, SimpleType>(),
-		cache: cache || new WeakMap<Type, SimpleType>()
+		cache
 	});
 }
 
