@@ -38,21 +38,21 @@ To make it easier to work with typescript types this library works by (behind th
 The `SimpleType` interface can be used to construct your own types for typechecking.
 
 ```typescript
-import { SimpleType, SimpleTypeKind } from "ts-simple-type";
+import { SimpleType } from "ts-simple-type";
 
 const colors: SimpleType = {
-  kind: SimpleTypeKind.UNION,
+  kind: "UNION",
   types: [
-    { kind: SimpleTypeKind.STRING_LITERAL, value: "RED" },
-    { kind: SimpleTypeKind.STRING_LITERAL, value: "GREEN" },
-    { kind: SimpleTypeKind.STRING_LITERAL, value: "BLUE" }
+    { kind: "STRING_LITERAL", value: "RED" },
+    { kind: "STRING_LITERAL", value: "GREEN" },
+    { kind: "STRING_LITERAL", value: "BLUE" }
   ]
 };
 
 simpleTypeToString(colors)
 > "RED" | "GREEN" | "BLUE"
 
-isAssignableToType(colors, { kind: SimpleTypeKind.STRING_LITERAL, value: "YELLOW" })
+isAssignableToType(colors, { kind: "STRING_LITERAL", value: "YELLOW" })
 > false;
 
 isAssignableToValue(colors, "BLUE")
@@ -86,18 +86,18 @@ simpleTypeToString(typeB)
 isAssignableToType(typeA, typeB, checker)
 > false
 
-isAssignableToType(typeA, { kind: SimpleTypeKind.NUMBER }, checker)
+isAssignableToType(typeA, { kind: "NUMBER" }, checker)
 > true
 
 isAssignableToType(
   typeB,
-  { kind: SimpleTypeKind.ARRAY, type: {kind: SimpleTypeKind.STRING} }
+  { kind: "ARRAY", type: {kind: "STRING"} }
   checker)
 > true
 
 isAssignableToType(
-  { kind: SimpleTypeKind.STRING },
-  { kind: SimpleTypeKind.STRING_LITERAL, value: "hello"})
+  { kind: "STRING" },
+  { kind: "STRING_LITERAL", value: "hello"})
 > true
 
 
@@ -108,18 +108,18 @@ isAssignableToPrimitiveType(typeA, checker)
 isAssignableToPrimitiveType(typeB, checker)
 > false
 
-isAssignableToPrimitiveType({ kind: SimpleTypeKind.ARRAY, type: {kind: SimpleTypeKind.STRING} })
+isAssignableToPrimitiveType({ kind: "ARRAY", type: {kind: "STRING"} })
 > false
 
 
 // isAssignableToSimpleTypeKind
-isAssignableToSimpleTypeKind(typeA, SimpleTypeKind.NUMBER, checker)
+isAssignableToSimpleTypeKind(typeA, "NUMBER", checker)
 > true
 
-isAssignableToSimpleTypeKind(typeB, SimpleTypeKind.BOOLEAN, checker)
+isAssignableToSimpleTypeKind(typeB, "BOOLEAN", checker)
 > false
 
-isAssignableToSimpleTypeKind(typeB, [SimpleTypeKind.STRING, SimpleTypeKind.UNDEFINED], checker, {op: "or"})
+isAssignableToSimpleTypeKind(typeB, ["STRING", "UNDEFINED"], checker, {op: "or"})
 > true
 
 
@@ -136,10 +136,10 @@ isAssignableToValue(typeB, true, checker)
 
 // toSimpleType
 toSimpleType(typeA, {checker})
-> { kind: SimpleTypeKind.NUMBER }
+> { kind: "NUMBER" }
 
 toSimpleType(typeB, {checker})
-> { kind: SimpleTYpeKind.ARRAY, type: { kind: SimpleTypeKind.NUMBER } }
+> { kind: "ARRAY", type: { kind: "NUMBER" } }
 
 ```
 
@@ -179,8 +179,3 @@ Returns a string representation of the simple type. The string representation ma
 
 Returns a `SimpleType` that represents a native Typescript `Type`.
 
-## Roadmap
-
--   Overloaded functions
--   Change behavior when `string literal` is assigned to an enum
--   Options to switch from strict type checking

@@ -1,16 +1,16 @@
+import { DEFAULT_GENERIC_PARAMETER_TYPE } from "../constants";
 import {
 	isSimpleTypeLiteral,
 	PRIMITIVE_TYPE_KINDS,
 	SimpleType,
 	SimpleTypeBooleanLiteral,
-	SimpleTypeIntersection,
-	SimpleTypeKind,
+	SimpleTypeGenericArguments,
 	SimpleTypeNull,
 	SimpleTypeNumberLiteral,
 	SimpleTypeTuple,
-	SimpleTypeUndefined,
-	SimpleTypeUnion
-} from "./simple-type";
+	SimpleTypeUndefined
+} from "../simple-type";
+import { resolveType } from "./resolve-type";
 
 /**
  * Returns a type that represents the length of the Tuple type
@@ -21,7 +21,7 @@ export function getTupleLengthType(tuple: SimpleTypeTuple): SimpleType {
 	// When the tuple has rest argument, return "number"
 	if (tuple.hasRestElement) {
 		return {
-			kind: SimpleTypeKind.NUMBER
+			kind: "NUMBER"
 		};
 	}
 
@@ -30,17 +30,17 @@ export function getTupleLengthType(tuple: SimpleTypeTuple): SimpleType {
 
 	if (minLength === tuple.members.length) {
 		return {
-			kind: SimpleTypeKind.NUMBER_LITERAL,
+			kind: "NUMBER_LITERAL",
 			value: minLength
 		};
 	}
 
 	return {
-		kind: SimpleTypeKind.UNION,
+		kind: "UNION",
 		types: new Array(tuple.members.length - minLength + 1).fill(0).map(
 			(_, i) =>
 				({
-					kind: SimpleTypeKind.NUMBER_LITERAL,
+					kind: "NUMBER_LITERAL",
 					value: minLength + i
 				} as SimpleTypeNumberLiteral)
 		)
@@ -49,7 +49,7 @@ export function getTupleLengthType(tuple: SimpleTypeTuple): SimpleType {
 
 export function simplifySimpleTypes(types: SimpleType[]): SimpleType[] {
 	let newTypes: SimpleType[] = [...types];
-	const NULLABLE_TYPE_KINDS = [SimpleTypeKind.UNDEFINED, SimpleTypeKind.NULL];
+	const NULLABLE_TYPE_KINDS = ["UNDEFINED", "NULL"];
 
 	// Only include one instance of primitives and literals
 	newTypes = newTypes.filter((type, i) => {
@@ -67,9 +67,9 @@ export function simplifySimpleTypes(types: SimpleType[]): SimpleType[] {
 	});
 
 	// Simplify boolean literals
-	const booleanLiteralTypes = newTypes.filter((t): t is SimpleTypeBooleanLiteral => t.kind === SimpleTypeKind.BOOLEAN_LITERAL);
+	const booleanLiteralTypes = newTypes.filter((t): t is SimpleTypeBooleanLiteral => t.kind === "BOOLEAN_LITERAL");
 	if (booleanLiteralTypes.find(t => t.value === true) != null && booleanLiteralTypes.find(t => t.value === false) != null) {
-		newTypes = [...newTypes.filter(type => type.kind !== SimpleTypeKind.BOOLEAN_LITERAL), { kind: SimpleTypeKind.BOOLEAN }];
+		newTypes = [...newTypes.filter(type => type.kind !== "BOOLEAN_LITERAL"), { kind: "BOOLEAN" }];
 	}
 
 	// Reorder "NULL" and "UNDEFINED" to be last
@@ -77,53 +77,28 @@ export function simplifySimpleTypes(types: SimpleType[]): SimpleType[] {
 	if (nullableTypes.length > 0) {
 		newTypes = [
 			...newTypes.filter(t => !NULLABLE_TYPE_KINDS.includes(t.kind)),
-			...nullableTypes.sort((t1, t2) => (t1.kind === SimpleTypeKind.NULL ? (t2.kind === SimpleTypeKind.UNDEFINED ? -1 : 0) : t2.kind === SimpleTypeKind.NULL ? 1 : 0))
+			...nullableTypes.sort((t1, t2) => (t1.kind === "NULL" ? (t2.kind === "UNDEFINED" ? -1 : 0) : t2.kind === "NULL" ? 1 : 0))
 		];
 	}
 
 	return newTypes;
 }
 
-/**
- * Combine and simplify structural types (union and intersection) recursively.
- * @param type
- */
-export function simplifyStructuralType(type: SimpleTypeIntersection | SimpleTypeUnion): SimpleTypeIntersection | SimpleTypeUnion {
-	const combinedMembers = new Map<SimpleTypeKind.INTERSECTION | SimpleTypeKind.UNION, SimpleTypeIntersection | SimpleTypeUnion>();
-	const members: SimpleType[] = [];
+export function extendTypeParameterMap(genericType: SimpleTypeGenericArguments, existingMap: Map<string, SimpleType>) {
+	const target = resolveType(genericType.target, existingMap);
 
-	for (const member of type.types) {
-		switch (member.kind) {
-			case SimpleTypeKind.INTERSECTION:
-			case SimpleTypeKind.UNION:
-				if (combinedMembers.has(member.kind)) {
-					combinedMembers.set(
-						member.kind,
-						simplifyStructuralType({
-							kind: member.kind,
-							types: [...member.types, ...combinedMembers.get(member.kind)!.types]
-						} as SimpleTypeIntersection | SimpleTypeUnion)
-					);
-				} else {
-					combinedMembers.set(member.kind, simplifyStructuralType(member));
-				}
-				break;
-			case SimpleTypeKind.NEVER:
-				break;
-			default:
-				members.push(member);
-		}
+	if ("typeParameters" in target) {
+		const parameterEntries = (target.typeParameters || []).map((parameter, i) => {
+			const typeArg = genericType.typeArguments[i];
+			const resolvedTypeArg = typeArg == null ? /*parameter.default || */ DEFAULT_GENERIC_PARAMETER_TYPE : resolveType(typeArg, existingMap);
+
+			//return [parameter.name, genericType.typeArguments[i] || parameter.default || { kind: "ANY" }] as [string, SimpleType];
+			return [parameter.name, resolvedTypeArg] as [string, SimpleType];
+		});
+		const allParameterEntries = [...existingMap.entries(), ...parameterEntries];
+
+		return new Map(allParameterEntries);
 	}
 
-	if (combinedMembers.has(type.kind)) {
-		members.push(...combinedMembers.get(type.kind)!.types);
-		combinedMembers.delete(type.kind);
-	}
-
-	members.push(...Array.from(combinedMembers.values()));
-
-	return {
-		kind: type.kind,
-		types: simplifySimpleTypes(members)
-	} as SimpleTypeIntersection | SimpleTypeUnion;
+	return existingMap;
 }

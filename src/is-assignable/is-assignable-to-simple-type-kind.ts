@@ -1,8 +1,8 @@
 import { Type, TypeChecker } from "typescript";
-import { isSimpleType, SimpleType, SimpleTypeKind } from "./simple-type";
-import { toSimpleType } from "./to-simple-type";
-import { isTypeChecker } from "./ts-util";
-import { and, or } from "./util";
+import { isSimpleType, SimpleType, SimpleTypeKind } from "../simple-type";
+import { toSimpleType } from "../transform/to-simple-type";
+import { and, or } from "../utils/list-util";
+import { isTypeChecker } from "../utils/ts-util";
 
 export interface SimpleTypeKindComparisonOptions {
 	op?: "and" | "or";
@@ -32,43 +32,51 @@ export function isAssignableToSimpleTypeKind(
 
 	options = (isTypeChecker(optionsOrChecker) ? options : optionsOrChecker) || {};
 
-	// Make sure that an object without members are treated as ANY
 	switch (type.kind) {
-		case SimpleTypeKind.OBJECT:
+		// Make sure that an object without members are treated as ANY
+		case "OBJECT": {
 			if (type.members == null || type.members.length === 0) {
-				return isAssignableToSimpleTypeKind({ kind: SimpleTypeKind.ANY }, kind, options);
+				return isAssignableToSimpleTypeKind({ kind: "ANY" }, kind, options);
 			}
 			break;
+		}
 
-		case SimpleTypeKind.ANY:
+		case "ANY": {
 			if (options.matchAny) {
 				return true;
 			}
 			break;
-	}
+		}
 
-	switch (type.kind) {
-		case SimpleTypeKind.ENUM:
-		case SimpleTypeKind.UNION:
+		case "LAZY": {
+			return isAssignableToSimpleTypeKind(type.type(), kind, options);
+		}
+
+		case "ENUM":
+		case "UNION": {
 			return or(type.types, childType => isAssignableToSimpleTypeKind(childType, kind, options));
+		}
 
-		case SimpleTypeKind.INTERSECTION:
+		case "INTERSECTION": {
 			return and(type.types, childType => isAssignableToSimpleTypeKind(childType, kind, options));
+		}
 
-		case SimpleTypeKind.ENUM_MEMBER:
+		case "ENUM_MEMBER": {
 			return isAssignableToSimpleTypeKind(type.type, kind, options);
+		}
 
-		case SimpleTypeKind.ALIAS:
+		case "ALIAS": {
 			return isAssignableToSimpleTypeKind(type.target, kind, options);
+		}
 
-		case SimpleTypeKind.GENERIC_PARAMETER:
-			return isAssignableToSimpleTypeKind(type.default || { kind: SimpleTypeKind.ANY }, kind, options);
-
-		default:
-			if (Array.isArray(kind)) {
-				return (options.op === "or" ? or : and)(kind, itemKind => type.kind === itemKind);
-			}
-
-			return type.kind === kind;
+		case "GENERIC_PARAMETER": {
+			return isAssignableToSimpleTypeKind(type.default || { kind: "ANY" }, kind, options);
+		}
 	}
+
+	if (Array.isArray(kind)) {
+		return (options.op === "or" ? or : and)(kind, itemKind => type.kind === itemKind);
+	}
+
+	return type.kind === kind;
 }

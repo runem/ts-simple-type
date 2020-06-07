@@ -1,5 +1,5 @@
 import { Type, TypeChecker } from "typescript";
-import { SimpleType, PRIMITIVE_TYPE_KINDS, isSimpleType } from "./simple-type";
+import { SimpleType, PRIMITIVE_TYPE_KINDS, isSimpleType } from "../simple-type";
 import { isAssignableToSimpleTypeKind } from "./is-assignable-to-simple-type-kind";
 
 /**
