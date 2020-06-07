@@ -46,189 +46,189 @@ export enum SimpleTypeModifierKind {
 }
 
 export interface SimpleTypeBase {
-	kind: SimpleTypeKind;
-	name?: string;
+	readonly kind: SimpleTypeKind;
+	readonly name?: string;
 }
 
 export interface SimpleTypeMember {
-	optional: boolean;
-	type: SimpleType;
+	readonly optional: boolean;
+	readonly type: SimpleType;
 }
 
 export interface SimpleTypeMemberNamed extends SimpleTypeMember {
-	name: string;
+	readonly name: string;
 }
 
 export interface SimpleTypeClassMember extends SimpleTypeMemberNamed {
-	modifiers: SimpleTypeModifierKind[];
+	readonly modifiers: SimpleTypeModifierKind[];
 }
 
 export interface SimpleTypeAlias extends SimpleTypeBase {
-	kind: SimpleTypeKind.ALIAS;
-	name: string;
-	target: SimpleType;
-	typeParameters?: SimpleTypeGenericParameter[];
+	readonly kind: SimpleTypeKind.ALIAS;
+	readonly name: string;
+	readonly target: SimpleType;
+	readonly typeParameters?: SimpleTypeGenericParameter[];
 }
 
 export interface SimpleTypeDate extends SimpleTypeBase {
-	kind: SimpleTypeKind.DATE;
+	readonly kind: SimpleTypeKind.DATE;
 }
 
 export interface SimpleTypeClass extends SimpleTypeBase {
-	kind: SimpleTypeKind.CLASS;
-	ctor?: SimpleTypeFunction;
-	typeParameters?: SimpleTypeGenericParameter[];
-	properties: SimpleTypeClassMember[];
-	methods: SimpleTypeClassMember[];
+	readonly kind: SimpleTypeKind.CLASS;
+	readonly ctor?: SimpleTypeFunction;
+	readonly typeParameters?: SimpleTypeGenericParameter[];
+	readonly properties: SimpleTypeClassMember[];
+	readonly methods: SimpleTypeClassMember[];
 }
 
 export interface SimpleTypeFunctionArgument {
-	name: string;
-	type: SimpleType;
-	optional: boolean;
-	spread: boolean;
-	initializer: boolean;
+	readonly name: string;
+	readonly type: SimpleType;
+	readonly optional: boolean;
+	readonly spread: boolean;
+	readonly initializer: boolean;
 }
 
 export interface SimpleTypeFunction extends SimpleTypeBase {
-	kind: SimpleTypeKind.FUNCTION;
-	argTypes?: SimpleTypeFunctionArgument[];
-	typeParameters?: SimpleTypeGenericParameter[];
-	returnType?: SimpleType;
+	readonly kind: SimpleTypeKind.FUNCTION;
+	readonly argTypes?: SimpleTypeFunctionArgument[];
+	readonly typeParameters?: SimpleTypeGenericParameter[];
+	readonly returnType?: SimpleType;
 }
 
 export interface SimpleTypeMethod extends SimpleTypeBase {
-	kind: SimpleTypeKind.METHOD;
-	argTypes: SimpleTypeFunctionArgument[];
-	typeParameters?: SimpleTypeGenericParameter[];
-	returnType: SimpleType;
+	readonly kind: SimpleTypeKind.METHOD;
+	readonly argTypes: SimpleTypeFunctionArgument[];
+	readonly typeParameters?: SimpleTypeGenericParameter[];
+	readonly returnType: SimpleType;
 }
 
 export interface SimpleTypeInterface extends SimpleTypeBase {
-	kind: SimpleTypeKind.INTERFACE;
-	members?: SimpleTypeMemberNamed[];
+	readonly kind: SimpleTypeKind.INTERFACE;
+	readonly members?: SimpleTypeMemberNamed[];
 }
 
 export interface SimpleTypeGenericArguments extends SimpleTypeBase {
-	kind: SimpleTypeKind.GENERIC_ARGUMENTS;
-	name?: undefined;
-	target: SimpleType;
-	typeArguments: SimpleType[];
+	readonly kind: SimpleTypeKind.GENERIC_ARGUMENTS;
+	readonly name?: undefined;
+	readonly target: SimpleType;
+	readonly typeArguments: SimpleType[];
 }
 
 export interface SimpleTypeGenericParameter extends SimpleTypeBase {
-	name: string;
-	kind: SimpleTypeKind.GENERIC_PARAMETER;
-	default?: SimpleType;
+	readonly name: string;
+	readonly kind: SimpleTypeKind.GENERIC_PARAMETER;
+	readonly default?: SimpleType;
 }
 
 export interface SimpleTypeObject extends SimpleTypeBase {
-	kind: SimpleTypeKind.OBJECT;
-	members?: SimpleTypeMemberNamed[];
+	readonly kind: SimpleTypeKind.OBJECT;
+	readonly members?: SimpleTypeMemberNamed[];
 }
 
 export interface SimpleTypeTuple extends SimpleTypeBase {
-	kind: SimpleTypeKind.TUPLE;
-	members: SimpleTypeMember[];
-	hasRestElement?: boolean;
+	readonly kind: SimpleTypeKind.TUPLE;
+	readonly members: SimpleTypeMember[];
+	readonly hasRestElement?: boolean;
 }
 
 export interface SimpleTypeArray extends SimpleTypeBase {
-	kind: SimpleTypeKind.ARRAY;
-	type: SimpleType;
+	readonly kind: SimpleTypeKind.ARRAY;
+	readonly type: SimpleType;
 }
 
 export interface SimpleTypePromise extends SimpleTypeBase {
-	kind: SimpleTypeKind.PROMISE;
-	type: SimpleType;
+	readonly kind: SimpleTypeKind.PROMISE;
+	readonly type: SimpleType;
 }
 
 export interface SimpleTypeEnumMember extends SimpleTypeBase {
-	kind: SimpleTypeKind.ENUM_MEMBER;
-	fullName: string;
-	name: string;
-	type: SimpleTypePrimitive;
+	readonly kind: SimpleTypeKind.ENUM_MEMBER;
+	readonly fullName: string;
+	readonly name: string;
+	readonly type: SimpleTypePrimitive;
 }
 
 export interface SimpleTypeEnum extends SimpleTypeBase {
-	name: string;
-	kind: SimpleTypeKind.ENUM;
-	types: SimpleTypeEnumMember[];
+	readonly name: string;
+	readonly kind: SimpleTypeKind.ENUM;
+	readonly types: SimpleTypeEnumMember[];
 }
 
 export interface SimpleTypeUnion extends SimpleTypeBase {
-	kind: SimpleTypeKind.UNION;
-	types: SimpleType[];
+	readonly kind: SimpleTypeKind.UNION;
+	readonly types: SimpleType[];
 }
 
 export interface SimpleTypeIntersection extends SimpleTypeBase {
-	kind: SimpleTypeKind.INTERSECTION;
-	types: SimpleType[];
+	readonly kind: SimpleTypeKind.INTERSECTION;
+	readonly types: SimpleType[];
 }
 
 export interface SimpleTypeBigIntLiteral extends SimpleTypeBase {
-	kind: SimpleTypeKind.BIG_INT_LITERAL;
-	value: bigint;
+	readonly kind: SimpleTypeKind.BIG_INT_LITERAL;
+	readonly value: bigint;
 }
 
 export interface SimpleTypeStringLiteral extends SimpleTypeBase {
-	kind: SimpleTypeKind.STRING_LITERAL;
-	value: string;
+	readonly kind: SimpleTypeKind.STRING_LITERAL;
+	readonly value: string;
 }
 
 export interface SimpleTypeNumberLiteral extends SimpleTypeBase {
-	kind: SimpleTypeKind.NUMBER_LITERAL;
-	value: number;
+	readonly kind: SimpleTypeKind.NUMBER_LITERAL;
+	readonly value: number;
 }
 
 export interface SimpleTypeBooleanLiteral extends SimpleTypeBase {
-	kind: SimpleTypeKind.BOOLEAN_LITERAL;
-	value: boolean;
+	readonly kind: SimpleTypeKind.BOOLEAN_LITERAL;
+	readonly value: boolean;
 }
 
 export interface SimpleTypeString extends SimpleTypeBase {
-	kind: SimpleTypeKind.STRING;
+	readonly kind: SimpleTypeKind.STRING;
 }
 
 export interface SimpleTypeNumber extends SimpleTypeBase {
-	kind: SimpleTypeKind.NUMBER;
+	readonly kind: SimpleTypeKind.NUMBER;
 }
 
 export interface SimpleTypeBoolean extends SimpleTypeBase {
-	kind: SimpleTypeKind.BOOLEAN;
+	readonly kind: SimpleTypeKind.BOOLEAN;
 }
 
 export interface SimpleTypeBigInt extends SimpleTypeBase {
-	kind: SimpleTypeKind.BIG_INT;
+	readonly kind: SimpleTypeKind.BIG_INT;
 }
 
 export interface SimpleTypeNull extends SimpleTypeBase {
-	kind: SimpleTypeKind.NULL;
+	readonly kind: SimpleTypeKind.NULL;
 }
 
 export interface SimpleTypeNever extends SimpleTypeBase {
-	kind: SimpleTypeKind.NEVER;
+	readonly kind: SimpleTypeKind.NEVER;
 }
 
 export interface SimpleTypeUndefined extends SimpleTypeBase {
-	kind: SimpleTypeKind.UNDEFINED;
+	readonly kind: SimpleTypeKind.UNDEFINED;
 }
 
 export interface SimpleTypeAny extends SimpleTypeBase {
-	kind: SimpleTypeKind.ANY;
+	readonly kind: SimpleTypeKind.ANY;
 }
 
 export interface SimpleTypeUnknown extends SimpleTypeBase {
-	kind: SimpleTypeKind.UNKNOWN;
+	readonly kind: SimpleTypeKind.UNKNOWN;
 }
 
 export interface SimpleTypeVoid extends SimpleTypeBase {
-	kind: SimpleTypeKind.VOID;
+	readonly kind: SimpleTypeKind.VOID;
 }
 
 export interface SimpleTypeCircularRef extends SimpleTypeBase {
-	kind: SimpleTypeKind.CIRCULAR_TYPE_REF;
-	ref: SimpleType;
+	readonly kind: SimpleTypeKind.CIRCULAR_TYPE_REF;
+	readonly ref: SimpleType;
 }
 
 export type SimpleType =

@@ -288,11 +288,7 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeOptions): SimpleT
 	else if (symbol != null && (isFunction(type) || isMethod(type))) {
 		const functionDeclaration = getDeclaration(symbol);
 		if (functionDeclaration != null) {
-			const simpleType = getSimpleFunctionFromDeclaration(functionDeclaration, options, true);
-
-			if (simpleType != null) {
-				simpleType.name = simpleType.name || name;
-			}
+			const simpleType = getSimpleFunctionFromDeclaration(functionDeclaration, options, true, name);
 
 			if (simpleType != null) {
 				return simpleType;
@@ -427,7 +423,12 @@ function literalToSimpleType(type: Type, checker: TypeChecker): SimpleTypeLitera
 	}
 }
 
-function getSimpleFunctionFromDeclaration(functionDeclaration: Declaration, options: ToSimpleTypeOptions, checkReturnType: boolean): SimpleTypeFunction | SimpleTypeMethod | undefined {
+function getSimpleFunctionFromDeclaration(
+	functionDeclaration: Declaration,
+	options: ToSimpleTypeOptions,
+	checkReturnType: boolean,
+	fallbackName?: string
+): SimpleTypeFunction | SimpleTypeMethod | undefined {
 	const { checker } = options;
 
 	const symbol = checker.getSymbolAtLocation(functionDeclaration);
@@ -450,7 +451,7 @@ function getSimpleFunctionFromDeclaration(functionDeclaration: Declaration, opti
 				} as SimpleTypeFunctionArgument;
 			});
 
-			const name = symbol != null ? symbol.getName() : undefined;
+			const name = symbol != null ? symbol.getName() : fallbackName;
 
 			const kind = isMethod(type) ? SimpleTypeKind.METHOD : SimpleTypeKind.FUNCTION;
 
