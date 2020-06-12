@@ -168,6 +168,20 @@ export const INTERSECTION_TYPES: TypescriptType[] = [
 	"1 & 2",
 	"'foo' & 'bar'",
 	"number & string"
+	/*{ // TODO: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-9.html#intersections-reduced-by-discriminant-properties
+		setup: `
+interface Circle {
+  kind: "circle";
+  radius: number;
+}
+
+interface Square {
+  kind: "square";
+  sideLength: number;
+}
+`,
+		type: `Circle & Square`
+	}*/
 ];
 
 export const EXTRA_TYPES: TypescriptType[] = [`Date`, `Promise<string>`, `Promise<number>`, `PathLike`];

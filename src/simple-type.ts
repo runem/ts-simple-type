@@ -1,6 +1,4 @@
 export type SimpleTypeKind =
-	// Special SimpleType Types
-	| "LAZY"
 	// Primitives types
 	| "STRING_LITERAL"
 	| "NUMBER_LITERAL"
@@ -51,14 +49,6 @@ export type SimpleTypeModifierKind = "EXPORT" | "AMBIENT" | "PUBLIC" | "PRIVATE"
 export interface SimpleTypeBase {
 	readonly kind: SimpleTypeKind;
 	readonly name?: string;
-}
-
-// ##############################
-// Special SimpleType Types
-// ##############################
-export interface SimpleTypeLazy extends SimpleTypeBase {
-	readonly kind: "LAZY";
-	readonly type: () => SimpleType;
 }
 
 // ##############################
@@ -261,7 +251,7 @@ export interface SimpleTypeAlias extends SimpleTypeBase {
 export interface SimpleTypeTuple extends SimpleTypeBase {
 	readonly kind: "TUPLE";
 	readonly members: SimpleTypeMember[];
-	readonly hasRestElement?: boolean;
+	readonly rest?: boolean;
 }
 
 export interface SimpleTypeArray extends SimpleTypeBase {
@@ -283,7 +273,6 @@ export interface SimpleTypePromise extends SimpleTypeBase {
 }
 
 export type SimpleType =
-	| SimpleTypeLazy
 	| SimpleTypeBigIntLiteral
 	| SimpleTypeEnumMember
 	| SimpleTypeEnum
@@ -346,7 +335,6 @@ const SIMPLE_TYPE_MAP: Record<SimpleTypeKind, "primitive" | "primitive_literal" 
 	GENERIC_PARAMETER: undefined,
 	INTERFACE: undefined,
 	INTERSECTION: undefined,
-	LAZY: undefined,
 	METHOD: undefined,
 	NEVER: undefined,
 	OBJECT: undefined,
@@ -375,3 +363,39 @@ export const SIMPLE_TYPE_KINDS = Object.keys(SIMPLE_TYPE_MAP) as SimpleTypeKind[
 export function isSimpleType(type: unknown): type is SimpleType {
 	return typeof type === "object" && type != null && "kind" in type && Object.values(SIMPLE_TYPE_KINDS).find((key: SimpleTypeKind) => key === (type as { kind: SimpleTypeKind }).kind) != null;
 }
+
+export type SimpleTypeKindMap = {
+	STRING_LITERAL: SimpleTypeStringLiteral;
+	NUMBER_LITERAL: SimpleTypeNumberLiteral;
+	BOOLEAN_LITERAL: SimpleTypeBooleanLiteral;
+	BIG_INT_LITERAL: SimpleTypeBigIntLiteral;
+	ES_SYMBOL_UNIQUE: SimpleTypeESSymbolUnique;
+	STRING: SimpleTypeString;
+	NUMBER: SimpleTypeNumber;
+	BOOLEAN: SimpleTypeBoolean;
+	BIG_INT: SimpleTypeBigInt;
+	ES_SYMBOL: SimpleTypeESSymbol;
+	NULL: SimpleTypeNull;
+	UNDEFINED: SimpleTypeUndefined;
+	VOID: SimpleTypeVoid;
+	NEVER: SimpleTypeNever;
+	ANY: SimpleTypeAny;
+	UNKNOWN: SimpleTypeUnknown;
+	ENUM: SimpleTypeEnum;
+	ENUM_MEMBER: SimpleTypeEnumMember;
+	NON_PRIMITIVE: SimpleTypeNonPrimitive;
+	UNION: SimpleTypeUnion;
+	INTERSECTION: SimpleTypeIntersection;
+	INTERFACE: SimpleTypeInterface;
+	OBJECT: SimpleTypeObject;
+	CLASS: SimpleTypeClass;
+	FUNCTION: SimpleTypeFunction;
+	METHOD: SimpleTypeMethod;
+	GENERIC_ARGUMENTS: SimpleTypeGenericArguments;
+	GENERIC_PARAMETER: SimpleTypeGenericParameter;
+	ALIAS: SimpleTypeAlias;
+	TUPLE: SimpleTypeTuple;
+	ARRAY: SimpleTypeArray;
+	DATE: SimpleTypeDate;
+	PROMISE: SimpleTypePromise;
+};

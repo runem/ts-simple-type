@@ -93,6 +93,9 @@ function visitComparisons(sourceFile: SourceFile, program: Program) {
 
 	const debug = process.env.DEBUG != null && process.env.DEBUG !== "false";
 	const eager = process.env.EAGER != null && process.env.EAGER !== "false";
+	if (eager) {
+		console.log(`Eager types`);
+	}
 
 	visitNodeComparisons(sourceFile, ({ line, nodeA, nodeB }) => {
 		line = line + 1;

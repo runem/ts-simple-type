@@ -1,5 +1,5 @@
-import { SimpleType, SimpleTypeNever, SimpleTypeUnknown } from "./simple-type";
 import { Type } from "typescript";
+import { SimpleType, SimpleTypeNever, SimpleTypeUnknown } from "./simple-type";
 
 export const DEFAULT_TYPE_CACHE = new WeakMap<Type, SimpleType>();
 

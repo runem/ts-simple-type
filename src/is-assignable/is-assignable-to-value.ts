@@ -1,6 +1,5 @@
-import { Type, TypeChecker } from "typescript";
-import { isSimpleType, SimpleType, SimpleTypeMemberNamed } from "../simple-type";
-import { toSimpleType } from "../transform/to-simple-type";
+import { Node, Program, Type, TypeChecker } from "typescript";
+import { SimpleType, SimpleTypeMemberNamed } from "../simple-type";
 import { isAssignableToType } from "./is-assignable-to-type";
 
 /**
@@ -10,16 +9,10 @@ import { isAssignableToType } from "./is-assignable-to-type";
  * @param value The value to test.
  */
 export function isAssignableToValue(type: SimpleType, value: unknown): boolean;
-export function isAssignableToValue(type: Type, value: unknown, checker: TypeChecker): boolean;
-export function isAssignableToValue(type: SimpleType | Type, value: unknown, checker: TypeChecker): boolean;
-export function isAssignableToValue(type: SimpleType | Type, value: unknown, checker?: TypeChecker): boolean {
-	if (isSimpleType(type)) {
-		const typeB = convertValueToSimpleType(value, { visitValueSet: new Set(), widening: false });
-
-		return isAssignableToType(type, typeB, { strict: true });
-	}
-
-	return isAssignableToValue(toSimpleType(type, checker as TypeChecker), value);
+export function isAssignableToValue(type: SimpleType | Type | Node, value: unknown, checker: TypeChecker | Program): boolean;
+export function isAssignableToValue(type: SimpleType | Type | Node, value: unknown, checker?: TypeChecker | Program): boolean {
+	const typeB = convertValueToSimpleType(value, { visitValueSet: new Set(), widening: false });
+	return isAssignableToType(type, typeB, checker!, { strict: true });
 }
 
 function convertValueToSimpleType(value: unknown, { visitValueSet, widening }: { visitValueSet: Set<unknown>; widening: boolean }): SimpleType {

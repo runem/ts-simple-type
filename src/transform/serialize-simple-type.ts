@@ -103,41 +103,38 @@ function serializeTypeInternal(
 		return existingId;
 	}
 
-	switch (simpleType.kind) {
-		case "LAZY":
-			return serializeTypeInternal(simpleType.type(), { emitType, getIdFromType, assignIdToType });
-		default: {
-			const id = assignIdToType(simpleType);
+	const id = assignIdToType(simpleType);
 
-			const serializedType = convertObject<SimpleType, SerializedSimpleTypeWithRef>({ ...simpleType }, obj => {
-				// Replace with id whenever encountering a SimpleType
-				if (obj !== simpleType && isSimpleType(obj)) {
-					// Convert the SimpleType recursively
-					const id = serializeTypeInternal(obj, { emitType, getIdFromType, assignIdToType });
-					return `${TYPE_REF_PREFIX}${id}`;
-				}
-			});
-
-			// Emit this serialized type to the type map
-			emitType(id, serializedType);
-
-			return id;
+	const serializedType = convertObject<SimpleType, SerializedSimpleTypeWithRef>({ ...simpleType }, obj => {
+		// Replace with id whenever encountering a SimpleType
+		if (isSimpleType(obj)) {
+			// Convert the SimpleType recursively
+			const id = serializeTypeInternal(obj, { emitType, getIdFromType, assignIdToType });
+			return `${TYPE_REF_PREFIX}${id}`;
 		}
-	}
+	});
+
+	// Emit this serialized type to the type map
+	emitType(id, serializedType);
+
+	return id;
 }
 
 function convertObject<T, U>(input: T, convert: (obj: unknown) => unknown): U {
+	let outer = true;
 	function convertObjectInner(obj: unknown): unknown {
 		if (Array.isArray(obj)) {
 			return obj.map(o => convertObjectInner(o));
 		}
 
-		if (obj !== input) {
+		if (!outer) {
 			const convertedObj = convert(obj);
 			if (convertedObj != null) {
 				return convertedObj;
 			}
 		}
+
+		outer = false;
 
 		if (typeof obj === "object" && obj != null) {
 			const newObj: { [key: string]: unknown } = {};
@@ -151,16 +148,4 @@ function convertObject<T, U>(input: T, convert: (obj: unknown) => unknown): U {
 	}
 
 	return convertObjectInner(input) as U;
-}
-
-export function removeLazyFromType(type: SimpleType): SimpleType {
-	if (type.kind === "LAZY") {
-		return type.type();
-	}
-
-	return convertObject(type, obj => {
-		if (isSimpleType(obj)) {
-			return removeLazyFromType(obj);
-		}
-	});
 }

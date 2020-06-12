@@ -17,8 +17,6 @@ function simpleTypeToStringInternal(type: SimpleType, visitTypeSet: Set<SimpleTy
 	}
 
 	switch (type.kind) {
-		case "LAZY":
-			return simpleTypeToStringInternal(type.type(), visitTypeSet);
 		case "BOOLEAN_LITERAL":
 			return String(type.value);
 		case "NUMBER_LITERAL":

@@ -1,8 +1,9 @@
 import { Node, Program, Type, TypeChecker } from "typescript";
-import { isAssignableToSimpleType, SimpleTypeComparisonOptions } from "./is-assignable-to-simple-type";
 import { isSimpleType, SimpleType } from "../simple-type";
 import { toSimpleType } from "../transform/to-simple-type";
 import { isNode, isProgram, isTypeChecker } from "../utils/ts-util";
+import { isAssignableToSimpleType } from "./is-assignable-to-simple-type";
+import { SimpleTypeComparisonOptions } from "./simple-type-comparison-options";
 
 interface TypeCheckerWithInternals extends TypeChecker {
 	isTypeAssignableTo(source: Type, target: Type): boolean;
@@ -16,8 +17,7 @@ interface TypeCheckerWithInternals extends TypeChecker {
  * @param options
  */
 export function isAssignableToType(typeA: SimpleType, typeB: SimpleType, options?: SimpleTypeComparisonOptions): boolean;
-export function isAssignableToType(typeA: SimpleType | Type | Node, typeB: SimpleType, checker: TypeChecker | Program, options?: SimpleTypeComparisonOptions): boolean;
-export function isAssignableToType(typeA: SimpleType, typeB: SimpleType | Type | Node, checker: TypeChecker | Program, options?: SimpleTypeComparisonOptions): boolean;
+export function isAssignableToType(typeA: SimpleType | Type | Node, typeB: SimpleType | Type | Node, checker: TypeChecker | Program, options?: SimpleTypeComparisonOptions): boolean;
 export function isAssignableToType(typeA: Type | Node, typeB: Type | Node, checker: TypeChecker | Program, options?: SimpleTypeComparisonOptions): boolean;
 export function isAssignableToType(
 	typeA: Type | Node | SimpleType,
@@ -28,7 +28,7 @@ export function isAssignableToType(
 export function isAssignableToType(
 	typeA: Type | Node | SimpleType,
 	typeB: Type | Node | SimpleType,
-	checkerOrOptions?: TypeChecker | SimpleTypeComparisonOptions | Program,
+	checkerOrOptions?: TypeChecker | Program | SimpleTypeComparisonOptions,
 	options?: SimpleTypeComparisonOptions
 ): boolean {
 	if (typeA === typeB) return true;

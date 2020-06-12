@@ -19,7 +19,7 @@ import { resolveType } from "./resolve-type";
  */
 export function getTupleLengthType(tuple: SimpleTypeTuple): SimpleType {
 	// When the tuple has rest argument, return "number"
-	if (tuple.hasRestElement) {
+	if (tuple.rest) {
 		return {
 			kind: "NUMBER"
 		};
