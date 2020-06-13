@@ -54,8 +54,8 @@
 		}
 	},
 	"lint-staged": {
-		"*.ts": "eslint --fix",
-		"*.{js,css,md}": "prettier --write"
+		"*.{ts,js}": "eslint --fix",
+		"*.{ts,js,md,json}": "prettier --write"
 	},
 	"ava": {
 		"cache": true,
