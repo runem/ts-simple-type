@@ -38,7 +38,7 @@ To make it easier to work with typescript types this library works by (behind th
 The `SimpleType` interface can be used to construct your own types for typechecking.
 
 ```typescript
-import { SimpleType } from "ts-simple-type";
+import { SimpleType, typeToString, isAssignableToType, isAssignableToValue } from "ts-simple-type";
 
 const colors: SimpleType = {
   kind: "UNION",
@@ -49,7 +49,7 @@ const colors: SimpleType = {
   ]
 };
 
-simpleTypeToString(colors)
+typeToString(colors)
 > "RED" | "GREEN" | "BLUE"
 
 isAssignableToType(colors, { kind: "STRING_LITERAL", value: "YELLOW" })
@@ -74,11 +74,11 @@ const typeB = checker.getTypeAtLocation(nodeB);
   - typeB is string[]
 */
 
-// simpleTypeToString
-simpleTypeToString(typeA)
+// typeToString
+typeToString(typeA)
 > "number"
 
-simpleTypeToString(typeB)
+typeToString(typeB)
 > "string[]"
 
 
@@ -89,10 +89,7 @@ isAssignableToType(typeA, typeB, checker)
 isAssignableToType(typeA, { kind: "NUMBER" }, checker)
 > true
 
-isAssignableToType(
-  typeB,
-  { kind: "ARRAY", type: {kind: "STRING"} }
-  checker)
+isAssignableToType(typeB, { kind: "ARRAY", type: {kind: "STRING"}}, checker)
 > true
 
 isAssignableToType(
@@ -119,7 +116,7 @@ isAssignableToSimpleTypeKind(typeA, "NUMBER", checker)
 isAssignableToSimpleTypeKind(typeB, "BOOLEAN", checker)
 > false
 
-isAssignableToSimpleTypeKind(typeB, ["STRING", "UNDEFINED"], checker, {op: "or"})
+isAssignableToSimpleTypeKind(typeB, ["STRING", "UNDEFINED"], checker)
 > true
 
 
@@ -169,8 +166,8 @@ Returns true if `type` is assignable to a `SimpleTypeKind`.
 
 Returns true if `type` is assignable to the value.
 
-### simpleTypeToString
-> simpleTypeToString(type: SimpleType): string
+### typeToString
+> typeToString(type: SimpleType): string
 
 Returns a string representation of the simple type. The string representation matches the one Typescript generates.
 
