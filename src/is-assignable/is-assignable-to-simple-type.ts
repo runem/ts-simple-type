@@ -13,6 +13,7 @@ import {
 	SimpleTypeObjectTypeBase,
 	SimpleTypeTuple
 } from "../simple-type";
+import { simpleTypeToString } from "../transform/simple-type-to-string";
 import { and, or } from "../utils/list-util";
 import { resolveType as resolveTypeUnsafe } from "../utils/resolve-type";
 import { extendTypeParameterMap, getTupleLengthType } from "../utils/simple-type-util";
@@ -1043,7 +1044,7 @@ function simpleTypeToStringLazy(simpleType: SimpleType | undefined): string {
 	if (simpleType == null) {
 		return "???";
 	}
-	return require("../transform/simple-type-to-string").simpleTypeToString(simpleType);
+	return simpleTypeToString(simpleType);
 }
 
 function colorText(options: IsAssignableToSimpleTypeInternalOptions, text: unknown, color: "cyan" | "gray" | "red" | "blue" | "green" | "yellow"): string {

@@ -23,7 +23,7 @@
 		"build": "rollup -c",
 		"watch": "rollup -c --watch",
 		"lint": "eslint src --ext ts",
-		"prettier:check": "prettier --list-different \"src/**/*.{ts,tsx}\"",
+		"prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
 		"prettier:write": "prettier --write \"src/**/*.{ts,tsx}\""
 	},
 	"main": "lib/index.cjs.js",
