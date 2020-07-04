@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - ????
+
+### Breaking Changes
+
+-   `toTypeString` has been renamed to `typeToString`.
+-   `simpleTypeToString` is no longer exported.
+-   `spread` on `SimpleTypeFunctionParameter` has been renamed to `rest`.
+-   `hasRestElement` on `SimpleTypeTuple` has been renamed to `rest`.
+-   `SimpleTypeKind` and `SimpleTypeModifierKind` have been converted to string literal unions..
+-   `methods` and `properties` on `SimpleTypeClass` have been renamed to `members`.
+-   `argTypes` on `SimpleTypeFunction` and `SimpleTypeMethod` have been renamed to `parameters`.
+-   `CIRCULAR_REF` SimpleType has been removed.
+-   `SimpleTypeFunctionArgument` has been renamed to `SimpleTypeFunctionParameter`.
+
+### Bug Fixes
+
+-   Added support for "Object", "Number", "Boolean", "BigInt", "String".
+-   Improved type checking support for intersection types.
+-   Fixed type checking of function type rest parameters.
+-   `optional` is now added properly to class members.
+-   Improved type checking of functions/methods.
+-   Improved type checking of class/interface/object.
+-   Type parameters now default to `unknown` instead of `any`.
+-   Members with call signatures are now `methods` instead of `functions`.
+
+### Features
+
+-   All `SimpleType`'s are now lazy per default. Types will evaluate when interacting with the object. This behavior can be overwritten with `{eager: true}`.
+-   Added helper functions to serialize and deserialize types making it possible to store types with circular references.
+-   Added new SimpleTypeKind "NON_PRIMITIVE" representing the non-primitive type: `object`.
+-   Added new SimpleTypeKidn "ES_SYMBOL" and "ES_SYMBOL_UNIQUE" representing the `Symbol` type.
+-   Added support for type checking **constructors** and **call signatures** on object types.
+-   Added `validateType` function that makes it possible easily make custom validator functions with `SimpleType`.
+-   The results of converting Type to SimpleType are now always cached and used whenever calling `toSimpleType`. It's possible to supply this function with your own cache.
+-   The results of checking type assignability are now always cached and used whenever calling `isAssignableToType`. It's possible to supply this function with your own cache.
+-   Added `serializeSimpleType` and `deserializeSimpleType` functions.
+-   All members of `SimpleType` are now `readonly`.
+-   If two `ts.Type` values are given to `isAssignableToType`, the function will prioritize testing using `isTypeAssignableTo` on the type checker if it has been exposed.
+
+### Project
+
+-   Updated all dependencies.
+-   Cleaned up project structure.
+-   Added script to quickly test and debug assignability (`npm run playground`).
+
 ## [0.3.7] - 2019-11-08
 
 ### Fixed

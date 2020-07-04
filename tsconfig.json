@@ -2,7 +2,7 @@
 	"include": ["src", "test"],
 	"compilerOptions": {
 		"incremental": true,
-		"target": "esnext",
+		"target": "ES2018",
 		"module": "commonjs",
 		"lib": ["esnext"],
 		"outDir": "./dist",

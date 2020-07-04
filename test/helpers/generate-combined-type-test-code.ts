@@ -6,16 +6,19 @@ let randomId = 100;
  * Prepares type test code for a type
  * @param type
  */
-function prepareTypeTestCode(type: TypescriptType): { setup?: string; type: string } {
+function prepareTypeTestCode(type: TypescriptType): { setup?: string; type: string | string[] } {
 	if (typeof type === "string") {
 		return { type };
 	}
 
 	const id = randomId++;
 
+	const setupCode = typeof type.setup === "string" ? type.setup : type.setup(id);
+	const typeCode = typeof type.type === "function" ? type.type(id) : type.type;
+
 	return {
-		setup: typeof type.setup === "string" ? type.setup : type.setup(id),
-		type: typeof type.type === "string" ? type.type : type.type(id)
+		setup: setupCode,
+		type: typeCode
 	};
 }
 
@@ -24,16 +27,22 @@ function prepareTypeTestCode(type: TypescriptType): { setup?: string; type: stri
  * @param tA
  * @param tB
  */
-function generateTypeTestCode([tA, tB]: TypeTest): { setupCode: string[]; testCode: string[] } {
+function generateTypeTestCode([tA, tB]: TypeTest): string[] {
 	const { type: typeA, setup: setupA } = prepareTypeTestCode(tA);
 	const { type: typeB, setup: setupB } = prepareTypeTestCode(tB);
 
-	const testCode = `{ const _: ${typeA} = {} as any as ${typeB}; }`;
+	const testCode: string[] = [];
+	for (const tA of Array.isArray(typeA) ? typeA : [typeA]) {
+		for (const tB of Array.isArray(typeB) ? typeB : [typeB]) {
+			testCode.push(
+				[`{`, ...(setupA != null ? [`  ${setupA.replace(/\n/g, "\n  ")}`] : []), ...(setupB != null ? [`  ${setupB.replace(/\n/g, "\n  ")}`] : []), `  const _: ${tA} = {} as ${tB}`, `}`].join(
+					"\n"
+				)
+			);
+		}
+	}
 
-	return {
-		setupCode: [...((setupA && [setupA]) || []), ...((setupB && [setupB]) || [])],
-		testCode: [testCode]
-	};
+	return testCode;
 }
 
 /**
@@ -48,8 +57,7 @@ export function generateCombinedTypeTestCode(typesX: TypescriptType[], typesY: T
 	for (const testTypeX of typesX) {
 		for (const testTypeY of typesY) {
 			const typeTestCombination = [testTypeX, testTypeY] as TypeTest;
-			const { setupCode, testCode } = generateTypeTestCode(typeTestCombination);
-			setupCode.forEach(c => setupCodeSet.add(c));
+			const testCode = generateTypeTestCode(typeTestCombination);
 			testCode.forEach(c => testCodeSet.add(c));
 		}
 	}

@@ -1,23 +1,14 @@
-import { CompilerOptions, Diagnostic, getPreEmitDiagnostics, isBinaryExpression, isVariableDeclaration, Node, Program, SyntaxKind, Type, TypeChecker } from "typescript";
+import { CompilerOptions, isBinaryExpression, isVariableDeclaration, Node, Program, SyntaxKind, Type, TypeChecker } from "typescript";
 import { programWithVirtualFiles } from "./analyze-text";
 import { generateCombinedTypeTestCode } from "./generate-combined-type-test-code";
 import { TypescriptType } from "./type-test";
-
-const INVALID_DIAGNOSTIC_CODES = [
-	2322, // typeB is not assignable to typeA (general)
-	2559, // typeB has no properties in common with typeA
-	2560, // typeB has no properties in common with typeA (did you mean to call it?)
-	2739, // typeB is missing the following properties from typeA
-	2740, // typeB is missing the following properties, and more from typeA
-	2741 // property is missing in typeB but required in typeA
-];
 
 /**
  * Visits all type comparisons by traversing the AST recursively
  * @param node
  * @param foundAssignment
  */
-function visitNodeComparisons(node: Node, foundAssignment: (options: { line: number; nodeA: Node; nodeB: Node }) => void): void {
+export function visitNodeComparisons(node: Node, foundAssignment: (options: { line: number; nodeA: Node; nodeB: Node }) => void): void {
 	if (isVariableDeclaration(node) && node.initializer != null) {
 		const line = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line;
 		foundAssignment({ line, nodeA: node, nodeB: node.initializer });
@@ -29,19 +20,12 @@ function visitNodeComparisons(node: Node, foundAssignment: (options: { line: num
 	node.forEachChild(child => visitNodeComparisons(child, foundAssignment));
 }
 
-/**
- * Returns if diagnostics tell that there is a valid assignment on a specific line
- * @param line
- * @param diagnostics
- */
-function hasValidAssignmentOnLine(line: number, diagnostics: readonly Diagnostic[]): boolean {
-	return !diagnostics.some(diagnostic => diagnostic.file && diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!).line === line && INVALID_DIAGNOSTIC_CODES.includes(diagnostic.code));
-}
-
 export interface VisitComparisonInTestCodeOptions {
 	line: number;
 	typeA: Type;
 	typeB: Type;
+	nodeA: Node;
+	nodeB: Node;
 	program: Program;
 	typeAString: string;
 	typeBString: string;
@@ -60,9 +44,6 @@ export function visitComparisonsInTestCode(testCode: string, compilerOptions: Co
 
 	const [sourceFile] = program.getSourceFiles().filter(f => !f.fileName.includes("node_modules"));
 
-	const emitResult = program.emit();
-	const diagnostics = getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
-
 	const checker = program.getTypeChecker();
 
 	visitNodeComparisons(sourceFile, ({ line, nodeA, nodeB }) => {
@@ -72,9 +53,9 @@ export function visitComparisonsInTestCode(testCode: string, compilerOptions: Co
 		const typeAString = checker.typeToString(typeA);
 		const typeBString = checker.typeToString(typeB);
 
-		const assignable = hasValidAssignmentOnLine(line, diagnostics);
+		const assignable = (checker as any).isTypeAssignableTo(typeB, typeA);
 
-		callback({ line, typeA, typeB, typeAString, typeBString, program, checker, assignable });
+		callback({ line, typeA, typeB, typeAString, typeBString, program, checker, assignable, nodeA, nodeB });
 	});
 }
 
