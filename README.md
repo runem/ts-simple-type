@@ -11,9 +11,9 @@ Right now the type checker for Typescript API doesn't expose methods for checkin
 
 To fill in the gap while this issue is being discussed this library aims to provide the most essential helper functions for working with types in Typescript.
 
-Furthermore this library can help you construct types (called `SimpleType`) which can be serialized and easy analyzed. 
+Furthermore, this library can help you construct types (called `SimpleType`) which can be serialized and easy analyzed. 
 
-This library has more than 6000 tests comparing results to actual Typescript diagnostics (see [test-types.ts](https://github.com/runem/ts-simple-type/blob/master/test-types/test-types.ts)).
+This library has more than 35000 tests comparing results to actual Typescript diagnostics (see [test-types.ts](https://github.com/runem/ts-simple-type/blob/master/test-types/test-types.ts)).
 
 ## Installation
 
@@ -159,17 +159,16 @@ Returns true if `type` is assignable to a primitive type like `string`, `number`
 
 Returns true if `type` is assignable to a `SimpleTypeKind`.
 - `options.matchAny` (boolean): Can be used to allow the "any" type to match everything.
-- `options.or` ("and" | "or"): Can be used control how an array will match if kind is an array of SimpleTypeKind.
 
 ### isAssignableToValue
 > isAssignableToValue(type: SimpleType | Type, value: any, checker?: TypeChecker): boolean
 
-Returns true if `type` is assignable to the value.
+Returns true if the type of the value is assignable to `type`.
 
 ### typeToString
 > typeToString(type: SimpleType): string
 
-Returns a string representation of the simple type. The string representation matches the one Typescript generates.
+Returns a string representation of the simple type. The string representation matches the one that Typescript generates.
 
 ### toSimpleType
 > toSimpleType(type: Type | Node, checker: TypeChecker): SimpleType
