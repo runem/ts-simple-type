@@ -48,7 +48,7 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, c
 		strictNullChecks: config?.strictNullChecks ?? config?.strict ?? true
 	};
 
-	const cacheKey = JSON.stringify(config);
+	const cacheKey = `${config.strict}:${config.strictFunctionTypes}:${config.strictNullChecks}`;
 	const cache = DEFAULT_RESULT_CACHE.get(cacheKey) || new WeakMap();
 	DEFAULT_RESULT_CACHE.set(cacheKey, cache);
 
