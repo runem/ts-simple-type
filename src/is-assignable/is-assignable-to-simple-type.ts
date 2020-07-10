@@ -275,7 +275,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		// [typeB] (expand)
 		case "GENERIC_PARAMETER": {
 			const resolvedArgument = options.genericParameterMapB.get(typeB.name);
-			const realTypeB = resolvedArgument || /*typeB.default ||*/ DEFAULT_GENERIC_PARAMETER_TYPE;
+			const realTypeB = resolvedArgument || typeB.default || DEFAULT_GENERIC_PARAMETER_TYPE;
 
 			if (options.config.debug) {
 				logDebug(
@@ -348,7 +348,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		// [typeA] (expand)
 		case "GENERIC_PARAMETER": {
 			const resolvedArgument = options.genericParameterMapA.get(typeA.name);
-			const realTypeA = resolvedArgument || /*typeA.default ||*/ DEFAULT_GENERIC_PARAMETER_TYPE;
+			const realTypeA = resolvedArgument || typeA.default || DEFAULT_GENERIC_PARAMETER_TYPE;
 
 			if (options.config.debug) {
 				logDebug(
