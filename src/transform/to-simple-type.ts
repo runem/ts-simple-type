@@ -3,6 +3,7 @@ import { Declaration, Node, Signature, SignatureDeclaration, Symbol as ESSymbol,
 import { inspect } from "util";
 import { DEFAULT_TYPE_CACHE } from "../constants";
 import {
+	isSimpleType,
 	SimpleType,
 	SimpleTypeAlias,
 	SimpleTypeEnumMember,
@@ -69,9 +70,16 @@ interface ToSimpleTypeInternalOptions {
  * @param checker
  * @param options
  */
+export function toSimpleType(type: SimpleType, checker?: TypeChecker, options?: ToSimpleTypeOptions): SimpleType;
 export function toSimpleType(type: Node, checker: TypeChecker, options?: ToSimpleTypeOptions): SimpleType;
 export function toSimpleType(type: Type, checker: TypeChecker, options?: ToSimpleTypeOptions): SimpleType;
-export function toSimpleType(type: Type | Node, checker: TypeChecker, options: ToSimpleTypeOptions = {}): SimpleType {
+export function toSimpleType(type: Type | Node | SimpleType, checker?: TypeChecker, options: ToSimpleTypeOptions = {}): SimpleType {
+	if (isSimpleType(type)) {
+		return type;
+	}
+
+	checker = checker!;
+
 	if (isNode(type)) {
 		// "type" is a "Node", convert it to a "Type" and continue.
 		return toSimpleType(checker.getTypeAtLocation(type), checker);
