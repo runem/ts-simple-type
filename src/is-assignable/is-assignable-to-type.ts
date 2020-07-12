@@ -19,12 +19,7 @@ interface TypeCheckerWithInternals extends TypeChecker {
 export function isAssignableToType(typeA: SimpleType, typeB: SimpleType, options?: SimpleTypeComparisonOptions): boolean;
 export function isAssignableToType(typeA: SimpleType | Type | Node, typeB: SimpleType | Type | Node, checker: TypeChecker | Program, options?: SimpleTypeComparisonOptions): boolean;
 export function isAssignableToType(typeA: Type | Node, typeB: Type | Node, checker: TypeChecker | Program, options?: SimpleTypeComparisonOptions): boolean;
-export function isAssignableToType(
-	typeA: Type | Node | SimpleType,
-	typeB: Type | Node | SimpleType,
-	checker: Program | TypeChecker | SimpleTypeComparisonOptions,
-	options?: SimpleTypeComparisonOptions
-): boolean;
+export function isAssignableToType(typeA: Type | Node | SimpleType, typeB: Type | Node | SimpleType, checker: Program | TypeChecker, options?: SimpleTypeComparisonOptions): boolean;
 export function isAssignableToType(
 	typeA: Type | Node | SimpleType,
 	typeB: Type | Node | SimpleType,
