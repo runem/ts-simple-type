@@ -40,9 +40,9 @@ export interface VisitComparisonInTestCodeOptions {
  * @param compilerOptions
  */
 export function visitComparisonsInTestCode(testCode: string, compilerOptions: CompilerOptions, callback: (options: VisitComparisonInTestCodeOptions) => void) {
-	const program = programWithVirtualFiles(testCode, { options: compilerOptions, includeLib: true });
+	const program = programWithVirtualFiles({ fileName: "test-code.ts", text: testCode }, { options: compilerOptions, includeLib: true });
 
-	const [sourceFile] = program.getSourceFiles().filter(f => !f.fileName.includes("node_modules"));
+	const [sourceFile] = program.getSourceFiles().filter(f => f.fileName.includes("test-code"));
 
 	const checker = program.getTypeChecker();
 

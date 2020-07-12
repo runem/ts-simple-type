@@ -1,5 +1,6 @@
-import { join } from "path";
-import { CompilerOptions, createCompilerHost, createProgram, createSourceFile, getDefaultLibFileName, ModuleKind, Program, ScriptKind, ScriptTarget, SourceFile, sys } from "typescript";
+import { existsSync, readFileSync } from "fs";
+import { dirname, join } from "path";
+import { CompilerOptions, createProgram, createSourceFile, getDefaultLibFileName, ModuleKind, Program, ScriptKind, ScriptTarget, SourceFile, sys } from "typescript";
 
 export interface ITestFile {
 	fileName: string;
@@ -45,64 +46,60 @@ export function programWithVirtualFiles(inputFiles: TestFile[] | TestFile, { opt
 		...options
 	};
 
-	if (includeLib) {
-		const compilerHost = createCompilerHost(compilerOptions);
-		const originalGetSourceFile = compilerHost.getSourceFile.bind(compilerHost);
-		compilerHost.getSourceFile = (fileName: string, languageVersion: ScriptTarget, onError, shouldCreateNewSourceFile) => {
-			const matchedFile = files.find(currentFile => currentFile.fileName === fileName);
-			if (matchedFile != null) {
-				return createSourceFile(fileName, matchedFile.text, languageVersion, true, ScriptKind.TS);
-			} else {
-				return originalGetSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile);
-			}
-		};
-		compilerHost.writeFile = () => {};
-
-		return createProgram(files.map(file => file.fileName), compilerOptions, compilerHost);
-	} else {
-		return createProgram({
-			rootNames: files.map(file => file.fileName),
-			options: compilerOptions,
-			host: {
-				writeFile: () => {},
-				readFile: (fileName: string): string | undefined => {
-					const matchedFile = files.find(currentFile => currentFile.fileName === fileName);
-					return matchedFile == null ? undefined : matchedFile.text;
-				},
-				fileExists: (fileName: string): boolean => {
-					return files.some(currentFile => currentFile.fileName === fileName);
-				},
-				getSourceFile(fileName: string, languageVersion: ScriptTarget): SourceFile | undefined {
-					const sourceText = this.readFile(fileName);
-					if (sourceText == null) return undefined;
-
-					return createSourceFile(fileName, sourceText, languageVersion, true, ScriptKind.TS);
-				},
-
-				getCurrentDirectory() {
-					return ".";
-				},
-
-				getDirectories(directoryName: string) {
-					return sys.getDirectories(directoryName);
-				},
-
-				getDefaultLibFileName(options: CompilerOptions): string {
-					return getDefaultLibFileName(options);
-				},
-
-				getCanonicalFileName(fileName: string): string {
-					return this.useCaseSensitiveFileNames() ? fileName : fileName.toLowerCase();
-				},
-
-				getNewLine(): string {
-					return sys.newLine;
-				},
-
-				useCaseSensitiveFileNames() {
-					return sys.useCaseSensitiveFileNames;
+	return createProgram({
+		rootNames: files.map(file => file.fileName),
+		options: compilerOptions,
+		host: {
+			writeFile: () => {},
+			readFile: (fileName: string): string | undefined => {
+				const matchedFile = files.find(currentFile => currentFile.fileName === fileName);
+				if (matchedFile != null) {
+					return matchedFile.text;
 				}
+
+				if (includeLib) {
+					fileName = fileName.match(/[/\\]/) ? fileName : join(dirname(require.resolve("typescript")), fileName);
+				}
+
+				if (existsSync(fileName)) {
+					return readFileSync(fileName, "utf8").toString();
+				}
+
+				return undefined;
+			},
+			fileExists: (fileName: string): boolean => {
+				return files.some(currentFile => currentFile.fileName === fileName);
+			},
+			getSourceFile(fileName: string, languageVersion: ScriptTarget): SourceFile | undefined {
+				const sourceText = this.readFile(fileName);
+				if (sourceText == null) return undefined;
+
+				return createSourceFile(fileName, sourceText, languageVersion, true, ScriptKind.TS);
+			},
+
+			getCurrentDirectory() {
+				return ".";
+			},
+
+			getDirectories(directoryName: string) {
+				return sys.getDirectories(directoryName);
+			},
+
+			getDefaultLibFileName(options: CompilerOptions): string {
+				return getDefaultLibFileName(options);
+			},
+
+			getCanonicalFileName(fileName: string): string {
+				return this.useCaseSensitiveFileNames() ? fileName : fileName.toLowerCase();
+			},
+
+			getNewLine(): string {
+				return sys.newLine;
+			},
+
+			useCaseSensitiveFileNames() {
+				return sys.useCaseSensitiveFileNames;
 			}
-		});
-	}
+		}
+	});
 }

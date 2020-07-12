@@ -28,7 +28,8 @@ interface IsAssignableToSimpleTypeInternalOptions {
 	genericParameterMapA: Map<string, SimpleType>;
 	genericParameterMapB: Map<string, SimpleType>;
 	preventCaching: () => void;
-	depth?: number;
+	operations: { value: number };
+	depth: number;
 }
 
 /**
@@ -45,15 +46,19 @@ export function isAssignableToSimpleType(typeA: SimpleType, typeB: SimpleType, c
 		cache: undefined,
 		strict: config?.strict ?? true,
 		strictFunctionTypes: config?.strictFunctionTypes ?? config?.strict ?? true,
-		strictNullChecks: config?.strictNullChecks ?? config?.strict ?? true
+		strictNullChecks: config?.strictNullChecks ?? config?.strict ?? true,
+		maxDepth: config?.maxDepth ?? 50,
+		maxOps: config?.maxOps ?? 1000
 	};
 
 	const cacheKey = `${config.strict}:${config.strictFunctionTypes}:${config.strictNullChecks}`;
 	const cache = DEFAULT_RESULT_CACHE.get(cacheKey) || new WeakMap();
 	DEFAULT_RESULT_CACHE.set(cacheKey, cache);
 
-	return isAssignableToSimpleTypeInternal(typeA, typeB, {
+	return isAssignableToSimpleTypeCached(typeA, typeB, {
 		config,
+		operations: { value: 0 },
+		depth: 0,
 		cache: userCache || cache,
 		insideType: new Set(),
 		comparingTypes: new Map(),
@@ -79,8 +84,16 @@ function isAssignableToSimpleTypeCached(typeA: SimpleType, typeB: SimpleType, op
 		return typeACache.get(typeB)!;
 	}
 
+	// Call "isAssignableToSimpleTypeInternal" with a mutated options object
 	const result = isAssignableToSimpleTypeInternal(typeA, typeB, {
-		...options,
+		depth: options.depth,
+		operations: options.operations,
+		genericParameterMapA: options.genericParameterMapA,
+		genericParameterMapB: options.genericParameterMapB,
+		config: options.config,
+		insideType: options.insideType,
+		comparingTypes: options.comparingTypes,
+		cache: options.cache,
 		preventCaching: () => {
 			options.preventCaching();
 			preventCaching = true;
@@ -120,21 +133,20 @@ function isCacheableType(simpleType: SimpleType, options: IsAssignableToSimpleTy
 }
 
 function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeInternalOptions): boolean {
-	// Make it possible to overwrite default behavior by running user defined logic for comparing types
-	if (options.config.isAssignable != null) {
-		const result = options.config.isAssignable(typeA, typeB, options.config);
-		if (result != null) {
-			//options.preventCaching();
-			return result;
-		}
-	}
+	// It's assumed that the "options" parameter is already an unique reference that is safe to mutate.
+
+	// Mutate depth and "operations"
+	options.depth = options.depth + 1;
+	options.operations.value++;
 
 	// Handle debugging nested calls to isAssignable
-	if (options.config.debug === true) {
-		options = { ...options };
-		options.depth = (options.depth || 0) + 1;
-
+	if (options.config.debug === true && 1 !== 1) {
 		logDebugHeader(typeA, typeB, options);
+	}
+
+	if (options.depth >= options.config.maxDepth! || options.operations.value >= options.config.maxOps!) {
+		options.preventCaching();
+		return true;
 	}
 
 	// When comparing types S and T, the relationship in question is assumed to be true
@@ -181,6 +193,15 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		options.preventCaching();
 	}
 
+	// Make it possible to overwrite default behavior by running user defined logic for comparing types
+	if (options.config.isAssignable != null) {
+		const result = options.config.isAssignable(typeA, typeB, options.config);
+		if (result != null) {
+			//options.preventCaching();
+			return result;
+		}
+	}
+
 	// Any and unknown. Everything is assignable to "ANY" and "UNKNOWN"
 	if (typeA.kind === "UNKNOWN" || typeA.kind === "ANY") {
 		return true;
@@ -197,7 +218,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 			comparingTypes.set(typeA, new Set([typeB]));
 		}
 
-		options = { ...options, comparingTypes };
+		options.comparingTypes = comparingTypes;
 	}
 
 	// #####################
@@ -765,10 +786,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 					const membersA = typeA.members || [];
 					const membersB = typeB.members || [];
 
-					const newOptions = {
-						...options,
-						insideType: new Set([...options.insideType, typeA, typeB])
-					};
+					options.insideType = new Set([...options.insideType, typeA, typeB]);
 
 					// Check how many properties typeB has in common with typeA.
 					let membersInCommon = 0;
@@ -849,7 +867,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 						if (options.config.debug) {
 							logDebug(options, "object-type", `Checking member '${memberA.name}' types`);
 						}
-						return isAssignableToSimpleTypeCached(memberA.type, memberB.type, newOptions);
+						return isAssignableToSimpleTypeCached(memberA.type, memberB.type, options);
 					});
 
 					if (options.config.debug) {
@@ -1004,23 +1022,23 @@ export function resolveType(simpleType: SimpleType, parameterMap: Map<string, Si
 }
 
 function logDebugHeader(typeA: SimpleType, typeB: SimpleType, options: IsAssignableToSimpleTypeInternalOptions): void {
-	const silentConfig = { ...options.config, debug: false };
+	const silentConfig = { ...options.config, debug: false, maxOps: 20, maxDepth: 20 };
 	let result: boolean | string;
 	try {
 		result = isAssignableToSimpleType(typeA, typeB, silentConfig);
 	} catch (e) {
 		result = e.message;
 	}
-	const depthChars = "   ".repeat(options.depth || 0);
+	const depthChars = "   ".repeat(options.depth);
 
 	const firstLogPart = ` ${depthChars}${simpleTypeToStringLazy(typeA)} ${colorText(options, ">:", "cyan")} ${simpleTypeToStringLazy(typeB)}   [${typeA.kind} === ${typeB.kind}]`;
 	let text = `${firstLogPart} ${" ".repeat(Math.max(2, 120 - firstLogPart.length))}${colorText(options, options.depth, "yellow")} ### (${typeA.name || "???"} === ${
 		typeB.name || "???"
 	}) [result=${colorText(options, result, result === true ? "green" : "red")}]`;
 
-	if ((options.depth || 0) >= 100) {
+	if (options.depth >= 50) {
 		// Too deep
-		if (options.depth === 100) {
+		if (options.depth === 50) {
 			text = `Nested comparisons reach 100. Skipping logging...`;
 		} else {
 			return;
@@ -1032,7 +1050,7 @@ function logDebugHeader(typeA: SimpleType, typeB: SimpleType, options: IsAssigna
 }
 
 function logDebug(options: IsAssignableToSimpleTypeInternalOptions, title: string, ...args: unknown[]): void {
-	const depthChars = "   ".repeat(options.depth || 0);
+	const depthChars = "   ".repeat(options.depth);
 
 	const text = `${depthChars} [${title}] ${args.join(" ")}`;
 

@@ -11,6 +11,8 @@ export interface SimpleTypeComparisonOptions extends SimpleTypeBaseOptions {
 	debug?: boolean;
 	debugLog?: (text: string) => void;
 	cache?: WeakMap<SimpleType, WeakMap<SimpleType, boolean>>;
+	maxDepth?: number;
+	maxOps?: number;
 }
 
 export interface SimpleTypeKindComparisonOptions extends SimpleTypeBaseOptions {
