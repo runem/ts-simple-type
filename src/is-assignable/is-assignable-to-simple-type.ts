@@ -140,7 +140,7 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 	options.operations.value++;
 
 	// Handle debugging nested calls to isAssignable
-	if (options.config.debug === true && 1 !== 1) {
+	if (options.config.debug === true) {
 		logDebugHeader(typeA, typeB, options);
 	}
 
@@ -1052,7 +1052,7 @@ function logDebugHeader(typeA: SimpleType, typeB: SimpleType, options: IsAssigna
 function logDebug(options: IsAssignableToSimpleTypeInternalOptions, title: string, ...args: unknown[]): void {
 	const depthChars = "   ".repeat(options.depth);
 
-	const text = `${depthChars} [${title}] ${args.join(" ")}`;
+	const text = `${depthChars} [${colorText(options, title, "blue")}] ${args.join(" ")}`;
 
 	// eslint-disable-next-line no-console
 	(options.config.debugLog || console.log)(colorText(options, text, "gray"));

@@ -45,6 +45,7 @@ import {
 	isPromise,
 	isString,
 	isSymbol,
+	isThisType,
 	isTupleTypeReference,
 	isUndefined,
 	isUniqueESSymbol,
@@ -506,6 +507,11 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeInternalOptions):
 
 	// Type Parameter
 	else if (type.isTypeParameter() && symbol != null) {
+		// This type
+		if (isThisType(type, ts) && symbol.valueDeclaration != null) {
+			return toSimpleTypeCached(checker.getTypeAtLocation(symbol.valueDeclaration), options);
+		}
+
 		const defaultType = type.getDefault();
 		const defaultSimpleType = defaultType != null ? toSimpleTypeCached(defaultType, options) : undefined;
 

@@ -94,6 +94,15 @@ export function isNonPrimitive(type: Type, ts: typeof tsModule): type is ObjectT
 	return typeHasFlag(type, ts.TypeFlags.NonPrimitive) || type.symbol?.name === "object";
 }
 
+export function isThisType(type: Type, ts: typeof tsModule): type is ObjectType {
+	const kind = type.getSymbol()?.valueDeclaration?.kind;
+	if (kind == null) {
+		return false;
+	}
+
+	return hasFlag(kind, ts.SyntaxKind.ThisKeyword);
+}
+
 export function isUnknown(type: Type, ts: typeof tsModule) {
 	return typeHasFlag(type, ts.TypeFlags.Unknown);
 }
