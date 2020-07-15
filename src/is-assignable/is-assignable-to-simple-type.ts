@@ -667,8 +667,8 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 				const resolvedTypeB = resolveType(paramB.type, options.genericParameterMapB);
 
 				// Unpack the array of rest parameters if possible
-				const paramAType = paramA.rest ? (resolvedTypeA.kind === "ARRAY" ? resolvedTypeA.type : resolvedTypeA) : resolvedTypeA;
-				const paramBType = paramB.rest ? (resolvedTypeB.kind === "ARRAY" ? resolvedTypeB.type : resolvedTypeB) : resolvedTypeB;
+				const paramAType = paramA.rest && resolvedTypeA.kind === "ARRAY" ? resolvedTypeA.type : paramA.type;
+				const paramBType = paramB.rest && resolvedTypeB.kind === "ARRAY" ? resolvedTypeB.type : paramB.type;
 				if (paramA.rest) {
 					if (options.config.debug) {
 						logDebug(options, "function", `paramA is 'rest' and has been resolved to '${simpleTypeToStringLazy(paramAType)}'`);
