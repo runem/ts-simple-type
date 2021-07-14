@@ -1091,13 +1091,13 @@ function colorText(options: IsAssignableToSimpleTypeInternalOptions, text: unkno
 	return `${COLOR}${text}${RESET}`;
 }
 
-const PRIMITIVE_TYPE_TO_LITERAL_MAP = ({
+const PRIMITIVE_TYPE_TO_LITERAL_MAP = {
 	["STRING"]: "STRING_LITERAL",
 	["NUMBER"]: "NUMBER_LITERAL",
 	["BOOLEAN"]: "BOOLEAN_LITERAL",
 	["BIG_INT"]: "BIG_INT_LITERAL",
 	["ES_SYMBOL"]: "ES_SYMBOL_UNIQUE"
-} as unknown) as Record<SimpleTypeKind, SimpleTypeKind | undefined>;
+} as unknown as Record<SimpleTypeKind, SimpleTypeKind | undefined>;
 
 /*const LITERAL_TYPE_TO_PRIMITIVE_TYPE_MAP = ({
 	["STRING_LITERAL"]: "STRING",
