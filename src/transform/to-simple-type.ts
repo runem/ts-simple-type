@@ -386,7 +386,7 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeInternalOptions):
 			const ctor = (() => {
 				const ctorSymbol = symbol != null && symbol.members != null ? symbol.members.get("__constructor" as never) : undefined;
 				if (ctorSymbol != null && symbol != null) {
-					const ctorDecl = ctorSymbol.declarations.length > 0 ? ctorSymbol.declarations[0] : ctorSymbol.valueDeclaration;
+					const ctorDecl = ctorSymbol.declarations !== undefined && ctorSymbol.declarations?.length > 0 ? ctorSymbol.declarations[0] : ctorSymbol.valueDeclaration;
 
 					if (ctorDecl != null && ts.isConstructorDeclaration(ctorDecl)) {
 						return getSimpleFunctionFromSignatureDeclaration(ctorDecl, options) as SimpleTypeFunction;
@@ -447,7 +447,7 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeInternalOptions):
 				name: symbol.name,
 				optional: (symbol.flags & ts.SymbolFlags.Optional) !== 0,
 				modifiers: declaration != null ? getModifiersFromDeclaration(declaration, ts) : [],
-				type: toSimpleTypeCached(checker.getTypeAtLocation(symbol.valueDeclaration), options)
+				type: toSimpleTypeCached(checker.getTypeAtLocation(symbol.valueDeclaration!), options)
 			};
 		});
 
