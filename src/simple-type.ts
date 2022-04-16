@@ -39,7 +39,8 @@ export type SimpleTypeKind =
 	| "ARRAY"
 	// Special types
 	| "DATE"
-	| "PROMISE";
+	| "PROMISE"
+	| "REGEXP";
 
 export type SimpleTypeModifierKind = "EXPORT" | "AMBIENT" | "PUBLIC" | "PRIVATE" | "PROTECTED" | "STATIC" | "READONLY" | "ABSTRACT" | "ASYNC" | "DEFAULT";
 
@@ -272,6 +273,10 @@ export interface SimpleTypePromise extends SimpleTypeBase {
 	readonly type: SimpleType;
 }
 
+export interface SimpleTypeRegExp extends SimpleTypeBase {
+	readonly kind: "REGEXP";
+}
+
 export type SimpleType =
 	| SimpleTypeBigIntLiteral
 	| SimpleTypeEnumMember
@@ -304,6 +309,7 @@ export type SimpleType =
 	| SimpleTypeUnknown
 	| SimpleTypeAlias
 	| SimpleTypeDate
+	| SimpleTypeRegExp
 	| SimpleTypeGenericArguments
 	| SimpleTypeGenericParameter;
 
@@ -329,6 +335,7 @@ const SIMPLE_TYPE_MAP: Record<SimpleTypeKind, "primitive" | "primitive_literal" 
 	ARRAY: undefined,
 	CLASS: undefined,
 	DATE: undefined,
+	REGEXP: undefined,
 	ENUM: undefined,
 	FUNCTION: undefined,
 	GENERIC_ARGUMENTS: undefined,
@@ -397,5 +404,6 @@ export type SimpleTypeKindMap = {
 	TUPLE: SimpleTypeTuple;
 	ARRAY: SimpleTypeArray;
 	DATE: SimpleTypeDate;
+	REGEXP: SimpleTypeRegExp;
 	PROMISE: SimpleTypePromise;
 };

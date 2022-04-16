@@ -43,6 +43,7 @@ import {
 	isObject,
 	isObjectTypeReference,
 	isPromise,
+	isRegExp,
 	isString,
 	isSymbol,
 	isThisType,
@@ -343,6 +344,11 @@ function toSimpleTypeInternal(type: Type, options: ToSimpleTypeInternalOptions):
 	else if (isDate(type, ts)) {
 		simpleType = {
 			kind: "DATE",
+			name
+		};
+	} else if (isRegExp(type, ts)) {
+		simpleType = {
+			kind: "REGEXP",
 			name
 		};
 	}
