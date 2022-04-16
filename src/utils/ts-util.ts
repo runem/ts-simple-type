@@ -170,6 +170,13 @@ export function isDate(type: Type, ts: typeof tsModule): type is ObjectType {
 	return symbol.getName() === "Date";
 }
 
+export function isRegExp(type: Type, ts: typeof tsModule): type is ObjectType {
+	if (!isObject(type, ts)) return false;
+	const symbol = type.getSymbol();
+	if (symbol == null) return false;
+	return symbol.getName() === "RegExp";
+}
+
 export function isTupleTypeReference(type: Type, ts: typeof tsModule): type is TupleTypeReference {
 	const target = getTargetType(type, ts);
 	if (target == null) return false;

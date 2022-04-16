@@ -84,6 +84,10 @@ function convertValueToSimpleType(value: unknown, { visitValueSet, widening }: {
 		return {
 			kind: "DATE"
 		};
+	} else if (value instanceof RegExp) {
+		return {
+			kind: "REGEXP"
+		};
 	} else if (typeof value === "object" && value != null) {
 		visitValueSet.add(value);
 

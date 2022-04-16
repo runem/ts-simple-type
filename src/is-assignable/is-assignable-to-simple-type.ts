@@ -920,6 +920,11 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 		case "DATE": {
 			return typeB.kind === "DATE";
 		}
+
+		// [typeA] (compare)
+		case "REGEXP": {
+			return typeB.kind === "REGEXP";
+		}
 	}
 
 	// If we some how end up here (we shouldn't), return "true" as a safe fallback
