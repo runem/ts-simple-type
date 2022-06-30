@@ -614,7 +614,15 @@ function getSimpleFunctionFromSignatureDeclaration(
 
 	const typeParameters = getTypeParameters(signatureDeclaration, options);
 
-	return { name, kind, returnType, parameters, typeParameters } as SimpleTypeFunction | SimpleTypeMethod;
+	const tsTypePredicate = checker.getTypePredicateOfSignature(signature);
+	const typePredicateType = tsTypePredicate && toSimpleTypeCached(tsTypePredicate.type, options);
+	const typePredicate = typePredicateType && {
+		parameterName: tsTypePredicate.parameterName,
+		parameterIndex: tsTypePredicate.parameterIndex,
+		type: typePredicateType
+	};
+
+	return { name, kind, returnType, parameters, typeParameters, typePredicate } as SimpleTypeFunction | SimpleTypeMethod;
 }
 
 function getRealSymbolName(symbol: ESSymbol, ts: typeof tsModule): string | undefined {

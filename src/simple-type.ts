@@ -206,11 +206,18 @@ export interface SimpleTypeFunctionParameter {
 	readonly initializer: boolean;
 }
 
+export interface SimpleTypeTypePredicate {
+	readonly paramaterName: string;
+	readonly paramaterIndex: number;
+	readonly type: SimpleType;
+}
+
 export interface SimpleTypeFunction extends SimpleTypeBase {
 	readonly kind: "FUNCTION";
 	readonly parameters?: SimpleTypeFunctionParameter[];
 	readonly typeParameters?: SimpleTypeGenericParameter[];
 	readonly returnType?: SimpleType;
+	readonly typePredicate?: SimpleTypeTypePredicate;
 }
 
 export interface SimpleTypeMethod extends SimpleTypeBase {
@@ -218,6 +225,7 @@ export interface SimpleTypeMethod extends SimpleTypeBase {
 	readonly parameters: SimpleTypeFunctionParameter[];
 	readonly typeParameters?: SimpleTypeGenericParameter[];
 	readonly returnType: SimpleType;
+	readonly typePredicate?: SimpleTypeTypePredicate;
 }
 
 // ##############################
