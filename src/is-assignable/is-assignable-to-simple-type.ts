@@ -567,6 +567,17 @@ function isAssignableToSimpleTypeInternal(typeA: SimpleType, typeB: SimpleType, 
 				}
 			}
 
+			// If typeA has a type predicate, make sure typeB's matches
+			if (typeA.typePredicate) {
+				if (!typeB.typePredicate) return false;
+				if (!isAssignableToSimpleTypeCached(typeA.typePredicate.type, typeB.typePredicate.type, options)) {
+					return false;
+				}
+				if (typeA.typePredicate.parameterIndex !== typeB.typePredicate.parameterIndex) {
+					return false;
+				}
+			}
+
 			// Test "this" types
 			const typeAThisParam = typeA.parameters.find(arg => arg.name === "this");
 			const typeBThisParam = typeB.parameters.find(arg => arg.name === "this");

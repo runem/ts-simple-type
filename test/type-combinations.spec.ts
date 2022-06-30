@@ -150,7 +150,14 @@ export const FUNCTION_TYPES: TypescriptType[] = [
 	`((a: number, b?: string) => string)`,
 	`((a: number, b: string) => string)`,
 	`(): string | null`,
-	`(): string | boolean | null | {a: string}`
+	`(): string | boolean | null | {a: string}`,
+	`(a: unknown) => boolean`,
+	`(a: string|number) => a is string`,
+	`(b: string|number) => b is number`,
+	`(a: unknown) => a is string|number`
+	// TODO: the following line exercises type predicate parameterIndex compatability,
+	// but fails the test for assignability with one of FUNCTION_REST_TYPES.
+	// `(a: string|number, b: string|number) => b is number`
 ];
 
 export const FUNCTION_THIS_TYPES: TypescriptType[] = [`(this: string, a: number) => any`, `(this: number, a: number) => any`, `(this: number) => any`];
